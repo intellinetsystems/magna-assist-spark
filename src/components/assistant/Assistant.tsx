@@ -72,10 +72,7 @@ export function Assistant() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable(messages))); } catch { /* ignore */ }
   }, [messages]);
 
-  // Auto-scroll
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages]);
+  // (Auto-scroll is handled inside <Thread/> via useSmartAutoScroll)
 
   // Unread badge: when closed and a new bot message arrives
   useEffect(() => {
