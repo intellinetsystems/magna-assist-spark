@@ -506,9 +506,8 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
   );
 }
 
-function Thread({ messages, scrollRef, transcriptOpen, setTranscriptOpen, onSuggestion, renderMessage, wide }: {
+function Thread({ messages, transcriptOpen, setTranscriptOpen, onSuggestion, renderMessage, wide }: {
   messages: ChatMessage[];
-  scrollRef: React.RefObject<HTMLDivElement | null>;
   transcriptOpen: boolean;
   setTranscriptOpen: (v: boolean) => void;
   onSuggestion: (s: string) => void;
@@ -516,23 +515,43 @@ function Thread({ messages, scrollRef, transcriptOpen, setTranscriptOpen, onSugg
   wide?: boolean;
 }) {
   const empty = messages.length === 0;
+  const lastIsTyping = messages[messages.length - 1]?.type === "typing";
+  const { ref, pinned, scrollToBottom } = useSmartAutoScroll<HTMLDivElement>([messages.length, lastIsTyping]);
   return (
-    <div ref={scrollRef} className="flex-1 overflow-y-auto bg-[var(--brand-50)]/40 noise-bg scrollbar-thin" aria-live="polite">
-      <div className={`mx-auto px-4 py-4 ${wide ? "max-w-3xl" : ""}`}>
-        {!empty && (
-          <button
-            onClick={() => setTranscriptOpen(!transcriptOpen)}
-            className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold flex items-center gap-1 mb-3"
-          >
-            Live Transcript <ChevronUp className={`w-3 h-3 transition ${transcriptOpen ? "" : "rotate-180"}`} />
-          </button>
-        )}
-        {transcriptOpen && (
-          <div>
-            {empty ? <Welcome onSuggestion={onSuggestion} /> : messages.map((m) => renderMessage(m))}
-          </div>
-        )}
+    <div className="relative flex-1 min-h-0">
+      <div ref={ref} className="absolute inset-0 overflow-y-auto bg-[var(--brand-50)]/40 noise-bg scrollbar-thin overscroll-contain" aria-live="polite">
+        <div className={`mx-auto px-4 py-4 ${wide ? "max-w-3xl" : ""}`}>
+          {!empty && (
+            <button
+              onClick={() => setTranscriptOpen(!transcriptOpen)}
+              className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold flex items-center gap-1 mb-3"
+            >
+              Live Transcript <ChevronUp className={`w-3 h-3 transition ${transcriptOpen ? "" : "rotate-180"}`} />
+            </button>
+          )}
+          {transcriptOpen && (
+            <div>
+              {empty ? <Welcome onSuggestion={onSuggestion} /> : messages.map((m) => renderMessage(m))}
+            </div>
+          )}
+          {/* Bottom spacing so the latest output isn't flush against the dock */}
+          {!empty && <div className="h-6" aria-hidden />}
+        </div>
       </div>
+      <AnimatePresence>
+        {!pinned && !empty && (
+          <motion.button
+            key="new-response"
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
+            onClick={() => scrollToBottom("smooth")}
+            className="absolute left-1/2 -translate-x-1/2 bottom-3 z-10 px-3.5 py-1.5 rounded-full bg-white border border-black/10 shadow-soft-lg text-xs font-medium text-[var(--ink-700)] hover:bg-[var(--brand-50)] hover:text-[var(--brand-600)] hover:border-[var(--brand-200)] inline-flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
+          >
+            New response <ChevronDown className="w-3.5 h-3.5" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
