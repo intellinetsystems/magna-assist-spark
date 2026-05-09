@@ -389,7 +389,6 @@ export function Assistant() {
               />
               <Thread
                 messages={messages}
-                scrollRef={scrollRef}
                 transcriptOpen={transcriptOpen}
                 setTranscriptOpen={setTranscriptOpen}
                 onSuggestion={handleSuggestion}
