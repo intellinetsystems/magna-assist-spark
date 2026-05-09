@@ -558,9 +558,6 @@ function Welcome({ onSuggestion }: { onSuggestion: (s: string) => void }) {
   return (
     <div className="flex flex-col items-center text-center py-8">
       <div className="relative">
-        <span className="absolute inset-0 rounded-3xl bg-[var(--brand-500)] opacity-25 animate-ripple" />
-        <span className="absolute inset-0 rounded-3xl bg-[var(--brand-500)] opacity-25 animate-ripple" style={{ animationDelay: "0.7s" }} />
-        <span className="absolute inset-0 rounded-3xl bg-[var(--brand-500)] opacity-25 animate-ripple" style={{ animationDelay: "1.4s" }} />
         <div className="relative w-24 h-24 rounded-3xl bg-gradient-brand flex items-center justify-center shadow-soft-lg">
           <Zap className="w-12 h-12 text-white" fill="currentColor" />
         </div>
