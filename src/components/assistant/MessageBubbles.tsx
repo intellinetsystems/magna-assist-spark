@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft } from "lucide-react";
+import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft, Eye } from "lucide-react";
 import { useState } from "react";
 
 function formatText(text: string) {
