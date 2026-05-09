@@ -52,7 +52,6 @@ export function Assistant() {
   const [unread, setUnread] = useState(false);
   const [etaAvailable, setEtaAvailable] = useState(true);
   const [confirmClose, setConfirmClose] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const timersRef = useRef<number[]>([]);
   // Pending state for the multi-step part flow
   const partFlowRef = useRef<{ model?: string; variant?: string; query?: string }>({});
