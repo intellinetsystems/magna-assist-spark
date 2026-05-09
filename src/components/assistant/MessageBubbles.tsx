@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft } from "lucide-react";
+import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft, Eye } from "lucide-react";
 import { useState } from "react";
 
 function formatText(text: string) {
@@ -277,8 +277,16 @@ export function PartCard() {
           </div>
           {/* Attachments */}
           <div className="rounded-xl border border-black/5 p-3 bg-[var(--surface-1)]">
-            <div className="text-xs font-semibold text-[var(--ink-700)] mb-2 flex items-center gap-1.5">
-              <Paperclip className="w-3.5 h-3.5" /> Attachments
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs font-semibold text-[var(--ink-700)] flex items-center gap-1.5">
+                <Paperclip className="w-3.5 h-3.5" /> Attachments
+              </div>
+              <button
+                onClick={() => setLightbox(0)}
+                className="text-[10px] font-medium px-2 py-1 rounded-full border border-[var(--brand-200)] bg-white text-[var(--brand-600)] hover:bg-[var(--brand-50)] inline-flex items-center gap-1 transition"
+              >
+                <Eye className="w-3 h-3" /> Preview Images
+              </button>
             </div>
             <div className="grid grid-cols-4 gap-2">
               {[
