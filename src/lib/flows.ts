@@ -117,15 +117,15 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
       ];
     case "wrong-part":
       return [
-        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thank you for contacting support. I understand you ordered **BRK-FRT-4421** (Front Brake Pad) but received **BRK-RR-5561** (Rear Brake Pad) instead. I apologize for the inconvenience." } },
+        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thanks for reaching out. I see you ordered **11471172000** (Engine Oil Filter for the 2638 HST) but received **11471160000** (Fuel Filter Element) instead. I apologize for the mix-up." } },
         { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "I've logged this as a **High Priority** issue. Please confirm or change priority." } },
         { delay: 200, message: { id: uid(), role: "bot", type: "priority" } },
       ];
     case "missing-part":
       return [
-        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thank you for reaching out. I'm sorry about the missing part in order **111005279**." } },
+        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thanks for reaching out. I'm sorry about the missing part in order **111005279**." } },
         { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Could you please confirm the missing part number and description so I can proceed with the ticket?" } },
-        { delay: 1500, message: { id: uid(), role: "user", type: "text", text: "The missing part is BRK-FRT-4421 (Front Brake Pad)" } },
+        { delay: 1500, message: { id: uid(), role: "user", type: "text", text: "The missing part is 006016465D1 (Hydraulic Oil Filter)" } },
         { delay: 700, message: { id: uid(), role: "bot", type: "text", text: "Thank you for the confirmation. Your ticket has been created successfully." } },
         { delay: 250, message: { id: uid(), role: "bot", type: "ticket", ticketId: "EPC-61484" } },
       ];
@@ -133,8 +133,8 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
       return [
         { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Sure — pulling up your most recent order…" } },
         { delay: 1100, message: { id: uid(), role: "bot", type: "typing" } },
-        { delay: 1100, message: { id: uid(), role: "bot", type: "text", text: "Your most recent order is **#111005278**, placed on Apr 4, 2026 for 3 line items (₹ 12,480)." } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "order-header", orderId: "111005278", placed: "Apr 4, 2026", items: 3, total: "₹ 12,480" } },
+        { delay: 1100, message: { id: uid(), role: "bot", type: "text", text: "Your most recent order is **#111005278**, placed on Apr 4, 2026 for 3 line items ($248.60)." } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "order-header", orderId: "111005278", placed: "Apr 4, 2026", items: 3, total: "$248.60" } },
       ];
     case "eta-fallback":
       return [
