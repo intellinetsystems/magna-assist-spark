@@ -18,6 +18,7 @@ import {
   PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
 } from "./GuidedCards";
 import { toast } from "sonner";
+import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
 
 type Mode = "closed" | "panel" | "full";
 
