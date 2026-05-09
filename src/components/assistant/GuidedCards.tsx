@@ -351,9 +351,8 @@ export function PartDetailCard({ part }: { part: PartItem }) {
               <div key={a.partNo} className="shrink-0 w-40 rounded-xl border border-black/5 bg-white p-2 hover:border-[var(--brand-200)] transition">
                 <div className="aspect-square rounded-lg bg-[var(--surface-1)] border border-black/5 mb-1.5 overflow-hidden"><PartThumb seed={i + 3} /></div>
                 <div className="font-mono text-[11px] font-semibold text-[var(--brand-600)] truncate">{a.partNo}</div>
-                <div className="flex items-center justify-between mt-0.5">
+                <div className="mt-0.5">
                   <span className="text-[11px] text-[var(--ink-900)] font-semibold">${a.mrp}.00</span>
-                  <button className="text-[10px] text-[var(--brand-600)] hover:underline">Compare</button>
                 </div>
               </div>
             ))}
