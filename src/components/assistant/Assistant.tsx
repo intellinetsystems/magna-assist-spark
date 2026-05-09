@@ -267,9 +267,6 @@ export function Assistant() {
             className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-2xl bg-gradient-brand text-white shadow-soft-lg flex items-center justify-center group focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
             aria-label="Open MAgNA AI Assistant"
           >
-            <span className="absolute inset-0 rounded-2xl bg-[var(--brand-500)] opacity-30 animate-ripple" />
-            <span className="absolute inset-0 rounded-2xl bg-[var(--brand-500)] opacity-30 animate-ripple" style={{ animationDelay: "0.8s" }} />
-            <span className="absolute inset-0 rounded-2xl bg-[var(--brand-500)] opacity-30 animate-ripple" style={{ animationDelay: "1.6s" }} />
             <div className="relative">
               <Zap className="w-7 h-7" strokeWidth={2.2} fill="currentColor" />
             </div>
