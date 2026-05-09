@@ -47,33 +47,33 @@ export const quickActions = [
 ];
 
 export const popularModels = [
-  "Bolero", "Scorpio", "XUV 700", "XEV 9E", "Thar", "1626 HST", "Treo", "Bolero Maxx",
+  "1626 HST", "2638 HST", "4540 4WD", "6075 PST", "eMax 20S HST", "Max 26XLT", "9125 S", "Retriever 1000",
 ];
 export const moreModels = [
-  "XUV 300", "XUV 400 EV", "Marazzo", "Alturas G4", "Pik Up", "Jeeto", "Supro", "Blazo X",
+  "1533 HST", "1635 Shuttle", "3640 PST", "5145 4WD", "7095 S Cab", "8090 PST Cab", "Roxor", "eMax 22L",
 ];
 
 export const variantsByModel: Record<string, string[]> = {
-  "XEV 9E": ["XEV 9E THREE SELECT", "XEV 9E PACK ONE", "XEV 9E PACK TWO", "XEV 9E PACK THREE"],
-  "Bolero": ["Bolero B4", "Bolero B6", "Bolero B6 (O)"],
-  "Scorpio": ["Scorpio-N Z2", "Scorpio-N Z4", "Scorpio-N Z8", "Scorpio Classic S5"],
-  "XUV 700": ["MX", "AX3", "AX5", "AX7", "AX7 L"],
-  "Thar": ["Thar AX (O)", "Thar LX 4WD", "Thar Roxx MX1"],
-  "1626 HST": ["Standard", "Cab", "ROPS"],
-  "Treo": ["HRT", "SFT", "ZOR Grand"],
-  "Bolero Maxx": ["City", "HD", "Pik Up"],
+  "1626 HST": ["Open Station ROPS", "Cab", "HST 4WD with Loader"],
+  "2638 HST": ["Open Station ROPS", "Cab", "HST 4WD with Loader & Backhoe"],
+  "4540 4WD": ["2WD ROPS", "4WD ROPS", "4WD Cab"],
+  "6075 PST": ["PST Cab", "PST ROPS", "Power Shuttle 4WD"],
+  "eMax 20S HST": ["Open Station", "with Loader", "with Mid-Mount Mower"],
+  "Max 26XLT": ["HST 4WD ROPS", "HST 4WD with Loader", "HST 4WD with Backhoe"],
+  "9125 S": ["S Cab 4WD", "P Cab 4WD", "S ROPS 4WD"],
+  "Retriever 1000": ["Standard 4x4", "Crew 4x4 LE", "Flexhauler"],
 };
 
 export const partCategories = [
-  "Brakes", "Engine", "Transmission", "Electrical", "Body", "Suspension", "Filters", "Lubricants",
+  "Engine", "Hydraulics", "Transmission / PTO", "Electrical", "Filters", "Front Axle / Loader", "Cab & Seat", "Tires & Wheels",
 ];
 
 const sampleParts: PartItem[] = [
-  { partNo: "S0601D010111N", description: "Front Brake Pad Set", category: "Brakes", vehicle: "SUV", model: "XEV 9E", variant: "XEV 9E THREE SELECT", aggregate: "Front Axle", groupNo: "G-1041", assembly: "Disc Pad", cost: 42.10, mrp: 58.00, inStock: 142 },
-  { partNo: "S0601D010112N", description: "Rear Brake Pad Set", category: "Brakes", vehicle: "SUV", model: "XEV 9E", variant: "XEV 9E THREE SELECT", aggregate: "Rear Axle", groupNo: "G-1042", assembly: "Disc Pad", cost: 38.40, mrp: 52.00, inStock: 88 },
-  { partNo: "S0601R020045N", description: "Front Brake Disc Rotor", category: "Brakes", vehicle: "SUV", model: "XEV 9E", variant: "XEV 9E THREE SELECT", aggregate: "Front Axle", groupNo: "G-1043", assembly: "Disc", cost: 96.00, mrp: 128.00, inStock: 34 },
-  { partNo: "S0601C030210N", description: "Brake Caliper LH", category: "Brakes", vehicle: "SUV", model: "XEV 9E", variant: "XEV 9E THREE SELECT", aggregate: "Front Axle", groupNo: "G-1044", assembly: "Caliper", cost: 142.00, mrp: 188.00, inStock: 12 },
-  { partNo: "S0601H040118N", description: "Brake Hose Front RH", category: "Brakes", vehicle: "SUV", model: "XEV 9E", variant: "XEV 9E THREE SELECT", aggregate: "Front Axle", groupNo: "G-1045", assembly: "Hose", cost: 18.20, mrp: 26.00, inStock: 60 },
+  { partNo: "11471172000", description: "Engine Oil Filter", category: "Filters", vehicle: "Compact Tractor", model: "2638 HST", variant: "Cab", aggregate: "Engine", groupNo: "G-2031", assembly: "Lube System", cost: 12.40, mrp: 18.95, inStock: 142 },
+  { partNo: "006016465D1", description: "Hydraulic Oil Filter", category: "Filters", vehicle: "Compact Tractor", model: "2638 HST", variant: "Cab", aggregate: "Hydraulics", groupNo: "G-2032", assembly: "Hydraulic Tank", cost: 28.90, mrp: 42.00, inStock: 88 },
+  { partNo: "11471160000", description: "Fuel Filter Element", category: "Filters", vehicle: "Compact Tractor", model: "2638 HST", variant: "Cab", aggregate: "Fuel System", groupNo: "G-2033", assembly: "Fuel Filter Housing", cost: 16.75, mrp: 24.50, inStock: 64 },
+  { partNo: "15861-43560", description: "Outer Air Filter", category: "Filters", vehicle: "Compact Tractor", model: "2638 HST", variant: "Cab", aggregate: "Air Intake", groupNo: "G-2034", assembly: "Air Cleaner", cost: 22.10, mrp: 31.99, inStock: 47 },
+  { partNo: "006014983B91", description: "PTO Clutch Plate", category: "Transmission / PTO", vehicle: "Compact Tractor", model: "2638 HST", variant: "Cab", aggregate: "PTO", groupNo: "G-2041", assembly: "Rear PTO", cost: 184.00, mrp: 248.00, inStock: 9 },
 ];
 
 export function searchParts(query: string, model: string, variant: string): PartItem[] {
@@ -117,15 +117,15 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
       ];
     case "wrong-part":
       return [
-        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thank you for contacting support. I understand you ordered **BRK-FRT-4421** (Front Brake Pad) but received **BRK-RR-5561** (Rear Brake Pad) instead. I apologize for the inconvenience." } },
+        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thanks for reaching out. I see you ordered **11471172000** (Engine Oil Filter for the 2638 HST) but received **11471160000** (Fuel Filter Element) instead. I apologize for the mix-up." } },
         { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "I've logged this as a **High Priority** issue. Please confirm or change priority." } },
         { delay: 200, message: { id: uid(), role: "bot", type: "priority" } },
       ];
     case "missing-part":
       return [
-        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thank you for reaching out. I'm sorry about the missing part in order **111005279**." } },
+        { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thanks for reaching out. I'm sorry about the missing part in order **111005279**." } },
         { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Could you please confirm the missing part number and description so I can proceed with the ticket?" } },
-        { delay: 1500, message: { id: uid(), role: "user", type: "text", text: "The missing part is BRK-FRT-4421 (Front Brake Pad)" } },
+        { delay: 1500, message: { id: uid(), role: "user", type: "text", text: "The missing part is 006016465D1 (Hydraulic Oil Filter)" } },
         { delay: 700, message: { id: uid(), role: "bot", type: "text", text: "Thank you for the confirmation. Your ticket has been created successfully." } },
         { delay: 250, message: { id: uid(), role: "bot", type: "ticket", ticketId: "EPC-61484" } },
       ];
@@ -133,8 +133,8 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
       return [
         { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Sure — pulling up your most recent order…" } },
         { delay: 1100, message: { id: uid(), role: "bot", type: "typing" } },
-        { delay: 1100, message: { id: uid(), role: "bot", type: "text", text: "Your most recent order is **#111005278**, placed on Apr 4, 2026 for 3 line items (₹ 12,480)." } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "order-header", orderId: "111005278", placed: "Apr 4, 2026", items: 3, total: "₹ 12,480" } },
+        { delay: 1100, message: { id: uid(), role: "bot", type: "text", text: "Your most recent order is **#111005278**, placed on Apr 4, 2026 for 3 line items ($248.60)." } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "order-header", orderId: "111005278", placed: "Apr 4, 2026", items: 3, total: "$248.60" } },
       ];
     case "eta-fallback":
       return [
