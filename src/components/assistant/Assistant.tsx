@@ -469,11 +469,43 @@ export function Assistant() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function saveCurrentToHistory() {
+    const userMsgs = messages.filter((m) => m.role === "user" && m.type === "text") as Extract<ChatMessage, { type: "text" }>[];
+    if (!userMsgs.length) return;
+    const title = userMsgs[0].text.slice(0, 80);
+    const id = activeChatId ?? newId();
+    setChatHistory((prev) => {
+      const without = prev.filter((c) => c.id !== id);
+      return [{ id, title, messages, updated: Date.now() }, ...without].slice(0, 30);
+    });
+    setActiveChatId(id);
+  }
+
   function newChat() {
+    saveCurrentToHistory();
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
     setMessages([]);
+    setActiveChatId(null);
     partFlowRef.current = {};
+  }
+
+  function loadChat(c: ChatHistoryItem) {
+    saveCurrentToHistory();
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setMessages(c.messages);
+    setActiveChatId(c.id);
+  }
+
+  function clearAllConversations() {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setMessages([]);
+    setChatHistory([]);
+    setActiveChatId(null);
+    try { localStorage.removeItem(HISTORY_KEY); localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    toast.success("All conversations cleared");
   }
 
   function endSession() {
