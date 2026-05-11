@@ -475,7 +475,57 @@ export function Assistant() {
     }, 250);
   }, []);
 
-  // Out-of-stock → ticket
+  // Find a Part: Series → Model → Aggregate → Assembly
+  const findRef = useRef<{ series?: string; model?: string; aggregate?: string }>({});
+  const onFindSeries = useCallback((series: string) => {
+    findRef.current = { series };
+    pushMessage({ id: newId(), role: "user", type: "text", text: series });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${series}** — now pick a **Model**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-model", series }), 300);
+    }, 250);
+  }, []);
+  const onFindModel = useCallback((model: string) => {
+    const series = findRef.current.series ?? "";
+    findRef.current.model = model;
+    pushMessage({ id: newId(), role: "user", type: "text", text: model });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${series} → ${model}** — choose an **Aggregate**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-aggregate", series, model }), 300);
+    }, 250);
+  }, []);
+  const onFindAggregate = useCallback((aggregate: string) => {
+    const series = findRef.current.series ?? "";
+    const model = findRef.current.model ?? "";
+    findRef.current.aggregate = aggregate;
+    pushMessage({ id: newId(), role: "user", type: "text", text: aggregate });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${aggregate}** — pick the **Assembly / Illustration**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-assembly", series, model, aggregate }), 300);
+    }, 250);
+  }, []);
+  const onFindAssembly = useCallback((assembly: string) => {
+    const { series = "", model = "", aggregate = "" } = findRef.current;
+    pushMessage({ id: newId(), role: "user", type: "text", text: assembly });
+    // Special: 00 Series → 4500 2WD → Attachments → Swinging Drawbar Attachment shows the illustration
+    if (/swinging\s*drawbar/i.test(assembly) && /4500\s*2WD/i.test(model)) {
+      const part = findPart("E007900403C11");
+      if (part) {
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 200);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Here is **${assembly}** for **${series} → ${model}**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**.` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
+        }, 900);
+        return;
+      }
+    }
+    setTimeout(() => {
+      const items = buildQuickRefItems(aggregate, series, model);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Parts in **${series} → ${model} → ${aggregate} → ${assembly}**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category: aggregate, series, submodel: model, items }), 300);
+    }, 250);
+  }, []);
+
   const onPartCreateTicket = useCallback((p: PartItem) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: `Create a ticket — ${p.partNo} is out of stock` });
     setTimeout(() => {
