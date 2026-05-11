@@ -216,7 +216,9 @@ function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
     9:  [{ x: 15, y: 60 }],
     10: [{ x: 34, y: 8 }],
   };
-  const points = callouts[highlightId] ?? [];
+  // Note: the illustration image itself highlights the relevant part in red,
+  // so we don't draw an additional CSS overlay ring on top.
+  void callouts; void highlightId;
   return (
     <div className="relative w-full h-full">
       <img
@@ -225,16 +227,6 @@ function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
         className="w-full h-full object-contain select-none"
         draggable={false}
       />
-      {points.map((p, i) => (
-        <span
-          key={i}
-          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ left: `${p.x}%`, top: `${p.y}%` }}
-          aria-hidden
-        >
-          <span className="block w-9 h-9 rounded-md ring-[3px] ring-[#E11D2E] animate-pulse shadow-[0_0_0_4px_rgba(225,29,46,0.18)]" />
-        </span>
-      ))}
     </div>
   );
 }
