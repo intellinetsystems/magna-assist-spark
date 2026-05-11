@@ -280,8 +280,8 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
         { delay: 600, message: { id: uid(), role: "bot", type: "text", text: "Thanks for reaching out. I'm sorry about the missing part in order **111005279**." } },
         { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Could you please confirm the missing part number and description so I can proceed with the ticket?" } },
         { delay: 1500, message: { id: uid(), role: "user", type: "text", text: "The missing part is KMW05861106406 (Hydraulic Adapter Straight)" } },
-        { delay: 700, message: { id: uid(), role: "bot", type: "text", text: "Thank you for the confirmation. Your ticket has been created successfully." } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "ticket", ticketId: "EPC-61484" } },
+        { delay: 700, message: { id: uid(), role: "bot", type: "text", text: "Thank you. Before I create the ticket, what **priority** should I set?" } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "priority" } },
       ];
     case "track-eta":
       return [
