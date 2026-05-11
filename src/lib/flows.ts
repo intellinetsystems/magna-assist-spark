@@ -341,3 +341,43 @@ export function buildOrder7777(): FlowStep[] {
     { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "7777", ticketId: "SUP-45822" } },
   ];
 }
+
+// --- Find a Part: Series → Model → Aggregate → Assembly ---
+export const findSeries = [
+  "00 Series", "05 Series", "05 Series Old Tractors", "10 Series",
+  "15 Series", "1500 Series", "16 Series", "1600 Series", "20 Series", "25 Series",
+];
+
+export const findModelsBySeries: Record<string, string[]> = {
+  "00 Series": ["4500 2WD", "4500 4WD", "5500 2WD", "5500 4WD", "6000 2WD", "6000 4WD", "6500 2WD", "6500 4WD"],
+  "05 Series": ["6075", "8090"],
+  "10 Series": ["4010 GEAR", "4010 HST", "5010 GEAR 4WD", "6010 HST CABIN"],
+  "15 Series": ["1525", "1526", "1533", "1538"],
+  "16 Series": ["2516", "2615", "2638"],
+  "20 Series": ["2540", "2545", "2638"],
+  "25 Series": ["2555", "2565"],
+};
+
+export const findAggregates = [
+  "Attachments", "Brakes", "C.R.P.T.O. & Transmission", "Clutch", "Electrical",
+  "Engine", "Fast Moving Parts List", "Front Axle", "Hydraulics", "Rim & Disc",
+  "ROPS", "Seat", "Sheet Metal", "Steering", "Throttle Linkages",
+];
+
+export const findAssembliesByAggregate: Record<string, string[]> = {
+  "Attachments": ["Swinging Drawbar Attachment", "Front Weight Kit", "Top Link Assembly"],
+  "Brakes": ["Brake Pedal Assembly", "Brake Drum & Shoes", "Park Brake Linkage"],
+  "C.R.P.T.O. & Transmission": ["Main Gearbox", "PTO Shaft Assembly", "Reverse Gear Cluster"],
+  "Clutch": ["Clutch Plate Assembly", "Clutch Cover", "Release Bearing"],
+  "Electrical": ["Wiring Harness — Main", "Headlamp Assembly", "Starter Motor"],
+  "Engine": ["Cylinder Head Assembly", "Crankshaft & Pistons", "Oil Pump"],
+  "Fast Moving Parts List": ["Filter Pack", "Belt Pack", "Bulb & Fuse Pack"],
+  "Front Axle": ["Front Axle Beam", "Steering Knuckle", "Tie Rod End"],
+  "Hydraulics": ["Hydraulic Pump", "Lift Cylinder", "Control Valve"],
+  "Rim & Disc": ["Front Rim Assembly", "Rear Rim Assembly", "Disc Plate"],
+  "ROPS": ["ROPS Frame", "ROPS Mounting Brackets"],
+  "Seat": ["Operator Seat Assembly", "Seat Suspension"],
+  "Sheet Metal": ["Bonnet Assembly", "Fender LH/RH", "Front Grille"],
+  "Steering": ["Steering Column", "Steering Wheel", "Power Steering Cylinder"],
+  "Throttle Linkages": ["Hand Throttle Lever", "Foot Throttle Pedal", "Throttle Cable"],
+};
