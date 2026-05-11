@@ -333,7 +333,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
 
   return (
     <BotShell>
-      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-5 shadow-soft w-full max-w-3xl">
+      <div className="@container bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-5 shadow-soft w-full max-w-3xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
@@ -371,8 +371,8 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         </div>
 
         {/* Assembly + Attachments */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
-          <div className="md:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
+        <div className="grid grid-cols-1 @[520px]:grid-cols-5 gap-3 mt-4">
+          <div className="@[520px]:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs font-semibold text-[var(--ink-700)]">
                 {part.category === "Filters" ? "Product Image" : part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
@@ -386,7 +386,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
                 </button>
               </div>
             </div>
-            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
+            <div className="aspect-[4/3] @[520px]:aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
               {part.category === "Filters" ? (
                 <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
               ) : part.category === "Keys" ? (
@@ -400,7 +400,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
             </div>
           </div>
 
-          <div className="md:col-span-2 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3">
+          <div className="@[520px]:col-span-2 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3">
             <div className="text-xs font-semibold text-[var(--ink-700)] mb-2">Attachments</div>
             <div className="space-y-1.5 max-h-[260px] overflow-y-auto scrollbar-thin pr-1">
               {attachments.map((a) => (
