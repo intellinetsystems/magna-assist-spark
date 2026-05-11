@@ -15,6 +15,8 @@ export type PartItem = {
   mrp: number;
   inStock: number;
   isQuickRef?: boolean;
+  searchTags?: string[];   // AI tag chips shown above illustration
+  highlight?: "red" | "purple"; // pill / overlay color
 };
 
 export type ChatMessage =
