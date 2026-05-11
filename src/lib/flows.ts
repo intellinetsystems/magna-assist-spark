@@ -106,11 +106,35 @@ export const defaultAssemblies: { figure: string; label: string }[] = [
   { figure: "1526B - FIG 008", label: "Backhoe Valve, Fittings & Hardware (FIG 008)" },
 ];
 
-// --- Accessories (Filters / Keys) hierarchy by Series ---
+// --- Quick Reference: full top-level catalogue (mirrors the QUICK REFERENCE panel) ---
+export const quickRefCategories = [
+  "3RD FUNCTION KIT", "AUXILIARY VALVE KIT", "BATTERY CHARGERS & JUMP STARTERS",
+  "BATTERY SERVICE PRODUCTS", "BLOCK HEATER", "CABIN", "CAMERAS", "ELECTRICALS",
+  "ENGINE", "FILTER LIST", "GLOPOWER COLOR RESTORER", "HITCH PARTS",
+  "HITCH PARTS DISPLAY", "HYDRAULICS", "KEY LIST", "MAINTENANCE ITEMS",
+  "MANUAL LIST", "LUBRICANTS",
+];
+
+// Series shared by Quick Reference categories.
 export const accessorySeries = [
   "00 Series", "05 Series", "05 Series Old Tractors", "10 Series", "15 Series",
   "1500 Series", "16 Series", "1600 Series", "20 Series", "25 Series", "2500 Series",
 ];
+
+// Sub-models (e.g. "10 Series → 4010 GEAR / 4010 HST / 5010 GEAR 4WD …")
+export const quickRefSubmodels: Record<string, string[]> = {
+  "10 Series": ["4010 GEAR", "4010 HST", "5010 GEAR 4WD", "5010 GEAR CABIN", "5010 HST CABIN", "6010 HST CABIN", "6110 GEAR CABIN", "KEY LIST - ALL MODELS"],
+  "15 Series": ["1525", "1526", "1533", "1538"],
+  "1500 Series": ["1526 GEAR", "1526 HST", "1533 SHUTTLE"],
+  "16 Series": ["2516", "2615", "2638"],
+  "1600 Series": ["1640", "1665"],
+  "20 Series": ["2540", "2545", "2638"],
+  "25 Series": ["2555", "2565"],
+  "2500 Series": ["2538", "2540", "2545"],
+  "00 Series": ["3540", "4540", "5540"],
+  "05 Series": ["6075", "8090"],
+  "05 Series Old Tractors": ["7095", "8590"],
+};
 
 // Backhoe Valve, Fittings & Hardware (1526B - FIG 008) - matches the user's reference illustration
 const backhoeValveParts: PartItem[] = [
