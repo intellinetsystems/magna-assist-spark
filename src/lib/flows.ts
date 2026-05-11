@@ -183,8 +183,8 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
   switch (flow) {
     case "part-search":
       return [
-        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **vehicle model** is this for?" } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "model-picker" } },
+        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **attachment category** is this for?" } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "attachment-picker" } },
       ];
     case "accessory-search":
       return [
