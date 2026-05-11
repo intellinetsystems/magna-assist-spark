@@ -6,7 +6,7 @@ import {
   Download, CheckCircle2, Share2, Plus, ArrowRight, X, ZoomIn,
 } from "lucide-react";
 import { BotShell } from "./MessageBubbles";
-import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
+import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, attachmentCategories, modelsByAttachment, assembliesByVariant, defaultAssemblies, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
 import { toast } from "sonner";
 import filterImg from "@/assets/accessory-filter.jpg";
 import keyImg from "@/assets/accessory-key.jpg";
