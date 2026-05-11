@@ -16,6 +16,7 @@ import {
 import {
   ModelPickerCard, VariantPickerCard, PartQueryCard, ResultListCard,
   PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
+  AccessoryPickerCard, AccessoryListCard,
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
