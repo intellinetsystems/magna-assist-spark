@@ -693,7 +693,7 @@ export function TrackingCardEx({ orderId, eta, carrier = "FedEx", status, partNo
         </ol>
         <div className="mt-3 pt-3 border-t border-black/5 flex items-center justify-between gap-2 flex-wrap">
           <a className="text-xs text-[var(--brand-600)] font-medium inline-flex items-center gap-1 hover:underline" href="#">
-            <MapPin className="w-3 h-3" /> Track on FedEx
+            <MapPin className="w-3 h-3" /> Track on {carrier}
           </a>
           <label className="text-xs text-[var(--ink-700)] inline-flex items-center gap-2 cursor-pointer">
             <input type="checkbox" checked={notify} onChange={(e) => { setNotify(e.target.checked); if (e.target.checked) toast.success("We'll notify you on delivery"); }} className="accent-[var(--brand-600)]" />
