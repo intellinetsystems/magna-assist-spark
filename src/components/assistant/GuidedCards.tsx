@@ -544,6 +544,8 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
                   <img src={filterImg} alt={part.description} className="max-h-full max-w-full object-contain" />
                 ) : part.category === "Keys" ? (
                   <img src={keyImg} alt={part.description} className="max-h-full max-w-full object-contain" />
+                ) : isDrawbar ? (
+                  <img src={drawbarFig} alt={part.assembly} className="max-h-full max-w-full object-contain" />
                 ) : (
                   <AssemblyDiagram highlightId={part.refNo} />
                 )}
