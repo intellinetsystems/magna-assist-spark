@@ -178,8 +178,8 @@ export function Assistant() {
         partFlowRef.current = { query: text };
         setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
         setTimeout(() => {
-          pushMessage({ id: newId(), role: "bot", type: "text", text: `I found **${items.length}** parts matching "${text}". To pinpoint the right one, which **vehicle model** is this for?` });
-          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "model-picker" }), 300);
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `I found **${items.length}** parts matching "${text}". To pinpoint the right one, which **attachment category** is this for?` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "attachment-picker" }), 300);
         }, 800);
         return;
       }
