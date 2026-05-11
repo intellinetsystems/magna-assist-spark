@@ -53,7 +53,7 @@ export function BotShell({ children }: { children: React.ReactNode }) {
 export function BotText({ text }: { text: string }) {
   return (
     <BotShell>
-      <div className="inline-block max-w-full bg-white border border-black/[0.04] rounded-3xl rounded-tl-md px-4 py-2.5 shadow-soft text-[14px] leading-relaxed text-[var(--ink-700)]">
+      <div className="inline-block max-w-full bg-white border border-black/[0.04] rounded-3xl rounded-tl-md px-4 py-2.5 shadow-soft text-[14px] leading-relaxed text-[var(--ink-700)] whitespace-pre-line">
         {formatText(text)}
       </div>
     </BotShell>
