@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
-  ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, type PartItem,
+  ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta, buildLastOrderNoEta, buildOrder1111, buildOrder7777,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, findPart, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
