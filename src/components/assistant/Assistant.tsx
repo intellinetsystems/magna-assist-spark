@@ -363,10 +363,6 @@ export function Assistant() {
     pushMessage({ id: newId(), role: "user", type: "text", text: "No" });
     setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "No problem. Is there anything else I can help you with?" }), 400);
   }, []);
-    const t = new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    toast.success(`We'll re-check at ${t}`);
-    pushMessage({ id: newId(), role: "bot", type: "text", text: `No problem — I'll re-check at **${t}** and notify you.` });
-  }, []);
 
   const onAccessoryPick = useCallback((kind: "Filter" | "Key", series: string) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: `${kind} List → ${series}` });
