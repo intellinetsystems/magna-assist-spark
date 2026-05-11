@@ -6,7 +6,7 @@ import {
   Download, CheckCircle2, Share2, Plus, ArrowRight, X, ZoomIn,
 } from "lucide-react";
 import { BotShell } from "./MessageBubbles";
-import { popularModels, moreModels, variantsByModel, partCategories, type PartItem } from "@/lib/flows";
+import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
 import { toast } from "sonner";
 
 function VoiceInput({ value, onChange, placeholder, onSubmit }: {
@@ -120,7 +120,7 @@ export function PartQueryCard({ model, variant, onSubmit }: { model: string; var
           {partCategories.map((c) => <Chip key={c} label={c} onClick={() => onSubmit(c)} />)}
         </div>
         <p className="text-[11px] text-[var(--ink-500)] mt-3 leading-relaxed">
-          Tip: paste a Part No. like <span className="font-mono text-[var(--brand-600)]">S0601D010111N</span>, or describe it like "front brake pad".
+          Tip: paste a Part No. like <span className="font-mono text-[var(--brand-600)]">KMW05863406506</span>, or describe it like "hydraulic adapter 90".
         </p>
       </div>
     </BotShell>
@@ -199,39 +199,91 @@ export function ResultListCard({ items, query, model, variant, onSelect }: {
   );
 }
 
-function AssemblyDiagram({ highlightId = 7 }: { highlightId?: number }) {
-  const callouts = [
-    { id: 1, x: 80, y: 60 }, { id: 2, x: 140, y: 50 }, { id: 3, x: 200, y: 70 },
-    { id: 4, x: 260, y: 90 }, { id: 5, x: 100, y: 140 }, { id: 6, x: 180, y: 160 },
-    { id: 7, x: 230, y: 130 }, { id: 8, x: 290, y: 170 },
-  ];
+function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
+  // Backhoe Valve, Fittings & Hardware (1526B - FIG 008) — manifold w/ adapter callouts.
+  // 10 callouts arranged to match the reference illustration.
+  const callouts: Record<number, { x: number; y: number }> = {
+    1: { x: 280, y: 70 },   // valve top section
+    2: { x: 158, y: 138 },  // adapter mid-left
+    3: { x: 320, y: 38 },   // hex cap screw top
+    5: { x: 88, y: 52 },    // hex nut top-left
+    6: { x: 110, y: 100 },  // 90° adapter (left)
+    7: { x: 250, y: 268 },  // bottom adapter
+    8: { x: 410, y: 252 },  // bottom-right tee
+    9: { x: 70, y: 188 },   // HIGHLIGHT — KMW05863406506
+    10:{ x: 65, y: 30 },    // washer
+  };
+  const Box = ({ id }: { id: number }) => {
+    const c = callouts[id];
+    if (!c) return null;
+    const active = id === highlightId;
+    return (
+      <g>
+        <rect
+          x={c.x - 14} y={c.y - 12} width="28" height="24" rx="2"
+          fill={active ? "#FFE4E6" : "#fff"}
+          stroke={active ? "#E11D2E" : "#111827"}
+          strokeWidth={active ? 2.4 : 1.5}
+        >
+          {active && <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.6s" repeatCount="indefinite" />}
+        </rect>
+        <text x={c.x} y={c.y + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill={active ? "#E11D2E" : "#111827"}>{id}</text>
+      </g>
+    );
+  };
+
   return (
-    <svg viewBox="0 0 360 220" className="w-full h-full">
+    <svg viewBox="0 0 500 320" className="w-full h-full" role="img" aria-label="Backhoe valve assembly illustration">
       <defs>
-        <linearGradient id="diskGrad" x1="0" x2="1"><stop offset="0%" stopColor="#E5E7EB" /><stop offset="100%" stopColor="#9CA3AF" /></linearGradient>
+        <linearGradient id="metalGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#F3F4F6" />
+          <stop offset="100%" stopColor="#D1D5DB" />
+        </linearGradient>
       </defs>
-      {/* hub */}
-      <circle cx="180" cy="110" r="40" fill="url(#diskGrad)" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      <circle cx="180" cy="110" r="14" fill="#fff" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      {/* caliper */}
-      <rect x="210" y="80" width="50" height="60" rx="6" fill="url(#diskGrad)" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      {/* pads (highlighted) */}
-      <rect x="216" y="88" width="38" height="44" rx="3" fill="#FFE4E6" stroke="#E11D2E" strokeWidth="2">
-        <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" />
-      </rect>
-      {/* hose */}
-      <path d="M260 110 Q310 90 330 60" stroke="#9CA3AF" strokeWidth="2" fill="none" opacity="0.5" />
-      {/* mount */}
-      <rect x="40" y="100" width="60" height="20" rx="3" fill="#E5E7EB" stroke="#6B7280" opacity="0.5" />
-      {callouts.map((c) => {
-        const active = c.id === highlightId;
-        return (
-          <g key={c.id} opacity={active ? 1 : 0.4}>
-            <circle cx={c.x} cy={c.y} r={active ? 11 : 9} fill={active ? "#E11D2E" : "#fff"} stroke={active ? "#E11D2E" : "#6B7280"} strokeWidth="1.5" />
-            <text x={c.x} y={c.y + 3.5} textAnchor="middle" fontSize="10" fontWeight="600" fill={active ? "#fff" : "#374151"}>{c.id}</text>
-          </g>
-        );
-      })}
+
+      {/* Manifold body */}
+      <rect x="170" y="95" width="220" height="90" rx="4" fill="url(#metalGrad)" stroke="#374151" strokeWidth="1.4" />
+      {/* Top spool ports */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <rect key={`t${i}`} x={185 + i * 33} y="80" width="20" height="20" rx="2" fill="#E5E7EB" stroke="#374151" />
+      ))}
+      {/* Front bores (×6) */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <circle key={`b${i}`} cx={195 + i * 33} cy="140" r="9" fill="#fff" stroke="#374151" />
+      ))}
+      {/* Bottom bores (×6) */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <circle key={`bb${i}`} cx={195 + i * 33} cy="168" r="6" fill="#fff" stroke="#374151" />
+      ))}
+
+      {/* Highlighted #9 — red 90° adapter at lower-left */}
+      <g>
+        <path d="M125 175 L 125 205 L 95 205 L 95 195 L 75 195 L 75 230" fill="none" stroke="#E11D2E" strokeWidth="6" strokeLinejoin="round">
+          <animate attributeName="stroke-opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite" />
+        </path>
+        <circle cx="75" cy="232" r="6" fill="#E11D2E" />
+      </g>
+
+      {/* Other adapters (left 90°, right 90°, bottom adapters) */}
+      <path d="M170 130 L 140 130 L 140 110 L 120 110 L 120 90" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M390 140 L 420 140 L 420 165 L 440 165 L 440 220" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M250 185 L 250 240 L 270 240 L 270 270" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M390 220 L 410 220 L 410 250" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+
+      {/* Cap screws / nuts on top */}
+      <line x1="320" y1="40" x2="320" y2="80" stroke="#6B7280" strokeWidth="2" />
+      <circle cx="90" cy="55" r="5" fill="#9CA3AF" stroke="#374151" />
+
+      {/* Leader lines from callouts to features */}
+      <line x1="280" y1="82" x2="280" y2="100" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="172" y1="138" x2="195" y2="140" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="124" y1="100" x2="140" y2="110" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="84" y1="190" x2="78" y2="220" stroke="#E11D2E" strokeWidth="1.5" />
+
+      {/* Callout boxes */}
+      {Object.keys(callouts).map((k) => <Box key={k} id={Number(k)} />)}
+
+      <text x="492" y="312" textAnchor="end" fontSize="8" fill="#9CA3AF" fontStyle="italic">COPYRIGHT PROTECTED</text>
     </svg>
   );
 }
@@ -248,8 +300,8 @@ export function PartDetailCard({ part }: { part: PartItem }) {
     { type: "image", icon: ImageIcon, name: "Hi-res_Photos", size: "4 images", color: "text-amber-600 bg-amber-50", action: "Preview" },
   ];
   const alternates = [
-    { partNo: "S0601D010099N", mrp: 54 }, { partNo: "S0601D010122N", mrp: 61 },
-    { partNo: "S0601D010188N", mrp: 49 }, { partNo: "S0601D010201N", mrp: 65 },
+    { partNo: "KMW05863108408", mrp: 27.95 }, { partNo: "KMW05862408508", mrp: 25.50 },
+    { partNo: "KMW05863106406", mrp: 15.40 }, { partNo: "KMW05861106406", mrp: 21.50 },
   ];
 
   return (
@@ -279,13 +331,14 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         {/* Specs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 mt-4 text-xs">
           {[
+            ["Ref No.", `#${part.refNo}`], ["Qty", `${part.qty}`], ["Figure", part.figure],
             ["Category", part.category], ["Vehicle", part.vehicle], ["Model", part.model],
             ["Variant", part.variant], ["Aggregate", part.aggregate], ["Group No.", part.groupNo],
             ["Assembly", part.assembly], ["Cost (USD)", `$ ${part.cost.toFixed(2)}`], ["MRP (USD)", `$ ${part.mrp.toFixed(2)}`],
           ].map(([k, v]) => (
-            <div key={k}>
+            <div key={k} className="min-w-0">
               <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)]">{k}</div>
-              <div className="text-[var(--ink-900)] font-medium">{v}</div>
+              <div className="text-[var(--ink-900)] font-medium break-words">{v}</div>
             </div>
           ))}
         </div>
@@ -305,9 +358,9 @@ export function PartDetailCard({ part }: { part: PartItem }) {
               </div>
             </div>
             <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden">
-              <AssemblyDiagram highlightId={7} />
+              <AssemblyDiagram highlightId={part.refNo} />
               <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
-                #7 — {part.partNo}
+                #{part.refNo} — {part.partNo}
               </div>
             </div>
           </div>
@@ -352,7 +405,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
                 <div className="aspect-square rounded-lg bg-[var(--surface-1)] border border-black/5 mb-1.5 overflow-hidden"><PartThumb seed={i + 3} /></div>
                 <div className="font-mono text-[11px] font-semibold text-[var(--brand-600)] truncate">{a.partNo}</div>
                 <div className="mt-0.5">
-                  <span className="text-[11px] text-[var(--ink-900)] font-semibold">${a.mrp}.00</span>
+                  <span className="text-[11px] text-[var(--ink-900)] font-semibold">${a.mrp.toFixed(2)}</span>
                 </div>
               </div>
             ))}
@@ -368,7 +421,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
               className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-soft-lg relative" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setExploded(false)} aria-label="Close" className="absolute top-3 right-3 p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
               <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">Exploded View — {part.assembly}</div>
-              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={7} /></div>
+              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={part.refNo} /></div>
               <p className="text-xs text-[var(--ink-500)] mt-3">Click any callout to navigate · Pinch / scroll to zoom</p>
             </motion.div>
           </div>
@@ -498,6 +551,109 @@ export function TrackingCardEx({ orderId, eta }: { orderId: string; eta: string 
             <input type="checkbox" checked={notify} onChange={(e) => { setNotify(e.target.checked); if (e.target.checked) toast.success("We'll notify you on delivery"); }} className="accent-[var(--brand-600)]" />
             <Bell className="w-3 h-3" /> Notify me on delivery
           </label>
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+// ---------- Accessories (Filter / Key) hierarchy ----------
+export function AccessoryPickerCard({
+  kind: initialKind,
+  onPick,
+}: {
+  kind: "Filter" | "Key";
+  onPick: (kind: "Filter" | "Key", series: string) => void;
+}) {
+  const [kind, setKind] = useState<"Filter" | "Key">(initialKind);
+  const [search, setSearch] = useState("");
+  const list = accessorySeries.filter((s) => s.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="flex items-center gap-2 mb-3">
+          {(["Filter", "Key"] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setKind(k)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+                kind === k
+                  ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)] shadow-soft"
+                  : "bg-white text-[var(--ink-700)] border-black/10 hover:bg-[var(--brand-50)]"
+              }`}
+            >
+              {k} List
+            </button>
+          ))}
+        </div>
+        <div className="text-[11px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">
+          Choose Series
+        </div>
+        <div className="flex items-center gap-1.5 bg-[var(--surface-1)] border border-black/5 rounded-full px-3 py-1.5 mb-2">
+          <Search className="w-3.5 h-3.5 text-[var(--ink-500)]" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search series…"
+            className="bg-transparent text-xs outline-none flex-1"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((s) => (
+            <button
+              key={s}
+              onClick={() => onPick(kind, s)}
+              className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate">{s}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function AccessoryListCard({
+  kind,
+  series,
+  items,
+  onSelect,
+}: {
+  kind: "Filter" | "Key";
+  series: string;
+  items: PartItem[];
+  onSelect: (p: PartItem) => void;
+}) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-2xl">
+        <div className="text-sm text-[var(--ink-700)] mb-3">
+          {kind} List → <strong className="text-[var(--ink-900)]">{series}</strong> · {items.length} items
+        </div>
+        <div className="space-y-2">
+          {items.map((p) => (
+            <button
+              key={p.partNo}
+              onClick={() => onSelect(p)}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl border border-black/5 hover:bg-[var(--brand-50)]/40 hover:border-[var(--brand-200)] hover:shadow-soft transition text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[var(--surface-1)] border border-black/5 shrink-0 flex items-center justify-center text-[10px] text-[var(--ink-500)] font-mono">
+                #{p.refNo}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-[13px] font-semibold text-[var(--brand-600)] truncate">{p.partNo}</div>
+                <div className="text-sm text-[var(--ink-900)] mt-0.5 truncate">{p.description}</div>
+                <div className="text-[11px] text-[var(--ink-500)] mt-0.5 truncate">{p.aggregate} · {p.assembly}</div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-[10px] text-[var(--ink-500)] uppercase">MRP</div>
+                <div className="text-sm font-semibold text-[var(--ink-900)]">${p.mrp.toFixed(2)}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
         </div>
       </div>
     </BotShell>

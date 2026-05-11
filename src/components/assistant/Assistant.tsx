@@ -8,7 +8,7 @@ import {
 import { Waveform } from "./Waveform";
 import {
   ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, type PartItem,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
@@ -16,6 +16,7 @@ import {
 import {
   ModelPickerCard, VariantPickerCard, PartQueryCard, ResultListCard,
   PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
+  AccessoryPickerCard, AccessoryListCard,
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
@@ -151,6 +152,7 @@ export function Assistant() {
   function handleSuggestion(s: string) {
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
+      "Find a filter or key": "accessory-search",
       "Track my last order": "track-eta",
       "Report an order issue": "wrong-part",
       "Create a service ticket": "create-ticket",
@@ -217,6 +219,15 @@ export function Assistant() {
     pushMessage({ id: newId(), role: "bot", type: "text", text: `No problem — I'll re-check at **${t}** and notify you.` });
   }, []);
 
+  const onAccessoryPick = useCallback((kind: "Filter" | "Key", series: string) => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: `${kind} List → ${series}` });
+    setTimeout(() => {
+      const items = kind === "Filter" ? buildFilters(series) : buildKeys(series);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the **${kind}** items for **${series}** — pick one to see full details:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "accessory-list", kind, series, items }), 300);
+    }, 250);
+  }, []);
+
   function newChat() {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
@@ -249,6 +260,8 @@ export function Assistant() {
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
     if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={onCreateTicketEta} onCheckLater={onCheckLater} />;
+    if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
+    if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
     return null;
   };
 
