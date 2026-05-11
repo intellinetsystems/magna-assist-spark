@@ -575,22 +575,20 @@ function Thread({ messages, transcriptOpen, setTranscriptOpen, onSuggestion, ren
 
 function Welcome({ onSuggestion }: { onSuggestion: (s: string) => void }) {
   return (
-    <div className="flex flex-col items-center text-center py-8">
-      <div className="relative">
-        <div className="relative w-24 h-24 rounded-3xl bg-gradient-brand flex items-center justify-center shadow-soft-lg">
-          <Zap className="w-12 h-12 text-white" fill="currentColor" />
-        </div>
+    <div className="flex flex-col items-center text-center py-6 px-2">
+      <div className="relative w-16 h-16 rounded-2xl bg-gradient-brand flex items-center justify-center shadow-soft-lg">
+        <Zap className="w-8 h-8 text-white" fill="currentColor" />
+        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 border-2 border-white" />
       </div>
-      <Waveform active className="mt-6 scale-150" />
-      <h2 className="mt-6 text-[22px] font-semibold text-[var(--ink-900)]">Hello, Travis Johnson!</h2>
-      <p className="text-[var(--brand-600)] font-semibold mt-1">Welcome to MAgNA AI Assistance!</p>
-      <p className="text-[var(--ink-500)] text-sm mt-1">How can I assist?</p>
-      <div className="flex flex-wrap gap-2 justify-center mt-6 max-w-md">
+      <h2 className="mt-5 text-[20px] font-semibold text-[var(--ink-900)] tracking-tight">Hello, Travis 👋</h2>
+      <p className="text-[var(--brand-600)] font-semibold text-sm mt-0.5">Welcome to MAgNA AI Assistance</p>
+      <p className="text-[var(--ink-500)] text-xs mt-1">Ask about parts, orders, filters or service tickets.</p>
+      <div className="flex flex-wrap gap-2 justify-center mt-5 max-w-md">
         {suggestions.map((s) => (
           <button
             key={s}
             onClick={() => onSuggestion(s)}
-            className="px-4 py-2 rounded-full bg-white border border-black/10 text-xs text-[var(--ink-700)] hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition shadow-sm flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
+            className="px-3.5 py-1.5 rounded-full bg-white border border-black/10 text-xs font-medium text-[var(--ink-700)] hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition shadow-sm flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
           >
             <Sparkles className="w-3 h-3 text-[var(--brand-500)]" />
             {s}
