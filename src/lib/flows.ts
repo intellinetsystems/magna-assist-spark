@@ -14,6 +14,7 @@ export type PartItem = {
   cost: number;
   mrp: number;
   inStock: number;
+  isQuickRef?: boolean;
 };
 
 export type ChatMessage =
@@ -161,22 +162,23 @@ const sampleParts: PartItem[] = backhoeValveParts;
 export function buildQuickRefItems(category: string, series: string, submodel?: string): PartItem[] {
   const seed = (series + (submodel ?? "")).replace(/\D/g, "").slice(0, 6) || "0";
   const ctx = submodel ? `${series} → ${submodel}` : series;
+  const qr = (p: PartItem): PartItem => ({ ...p, isQuickRef: true });
   if (category === "KEY LIST") {
     return [
-      { partNo: `KMW${seed}078720`, description: `KEY Assy — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 1, qty: 1, cost: 7.50, mrp: 10.80, inStock: 14 },
-      { partNo: `KMW${seed}KEY02`, description: `Cab Door Key — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "Cab", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 2, qty: 2, cost: 3.40, mrp: 7.25, inStock: 0 },
+      qr({ partNo: `KMW${seed}078720`, description: `KEY Assy — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 1, qty: 1, cost: 7.50, mrp: 10.80, inStock: 14 }),
+      qr({ partNo: `KMW${seed}KEY02`, description: `Cab Door Key — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "Cab", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 2, qty: 2, cost: 3.40, mrp: 7.25, inStock: 0 }),
     ];
   }
   if (category === "FILTER LIST") {
     return [
-      { partNo: `KMW${seed}71172`, description: `Engine Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Engine", groupNo: "G-2031", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 1, qty: 1, cost: 12.40, mrp: 18.95, inStock: 142 },
-      { partNo: `KMW${seed}16465`, description: `Hydraulic Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Hydraulics", groupNo: "G-2032", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 2, qty: 1, cost: 28.90, mrp: 42.00, inStock: 0 },
-      { partNo: `KMW${seed}71160`, description: `Fuel Filter Element — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Fuel System", groupNo: "G-2033", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 3, qty: 1, cost: 16.75, mrp: 24.50, inStock: 64 },
+      qr({ partNo: `KMW${seed}71172`, description: `Engine Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Engine", groupNo: "G-2031", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 1, qty: 1, cost: 12.40, mrp: 18.95, inStock: 142 }),
+      qr({ partNo: `KMW${seed}16465`, description: `Hydraulic Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Hydraulics", groupNo: "G-2032", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 2, qty: 1, cost: 28.90, mrp: 42.00, inStock: 0 }),
+      qr({ partNo: `KMW${seed}71160`, description: `Fuel Filter Element — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Fuel System", groupNo: "G-2033", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 3, qty: 1, cost: 16.75, mrp: 24.50, inStock: 64 }),
     ];
   }
   return [
-    { partNo: `KMW${seed}A001`, description: `${category} primary item — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 1, qty: 1, cost: 24.00, mrp: 39.95, inStock: 22 },
-    { partNo: `KMW${seed}A002`, description: `${category} accessory — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 2, qty: 1, cost: 11.00, mrp: 17.50, inStock: 0 },
+    qr({ partNo: `KMW${seed}A001`, description: `${category} primary item — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 1, qty: 1, cost: 24.00, mrp: 39.95, inStock: 22 }),
+    qr({ partNo: `KMW${seed}A002`, description: `${category} accessory — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 2, qty: 1, cost: 11.00, mrp: 17.50, inStock: 0 }),
   ];
 }
 
