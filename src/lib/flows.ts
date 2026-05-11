@@ -144,7 +144,7 @@ export const quickRefSubmodels: Record<string, string[]> = {
   "20 Series": ["2540", "2545", "2638"],
   "25 Series": ["2555", "2565"],
   "2500 Series": ["2538", "2540", "2545"],
-  "00 Series": ["3540", "4540", "5540"],
+  "00 Series": ["4500 2WD", "3540", "4540", "5540"],
   "05 Series": ["6075", "8090"],
   "05 Series Old Tractors": ["7095", "8590"],
 };
