@@ -656,7 +656,7 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
         </button>
       </div>
       <p className="text-center text-[10px] text-[var(--ink-500)] mt-2">
-        MAgNA AI may make mistakes — verify critical info. <span className="opacity-60">· Shift+E flips ETA demo</span>
+        MAgNA AI may make mistakes — verify critical info.
       </p>
     </div>
   );
