@@ -32,7 +32,12 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "result-list"; query: string; model: string; variant: string; items: PartItem[] }
   | { id: string; role: "bot"; type: "part-detail"; part: PartItem }
   | { id: string; role: "bot"; type: "accessory-picker"; kind: "Filter" | "Key" }
-  | { id: string; role: "bot"; type: "accessory-list"; kind: "Filter" | "Key"; series: string; items: PartItem[] };
+  | { id: string; role: "bot"; type: "accessory-list"; kind: "Filter" | "Key"; series: string; items: PartItem[] }
+  | { id: string; role: "bot"; type: "quick-ref-picker" }
+  | { id: string; role: "bot"; type: "quick-ref-series"; category: string }
+  | { id: string; role: "bot"; type: "quick-ref-submodel"; category: string; series: string }
+  | { id: string; role: "bot"; type: "quick-ref-list"; category: string; series: string; submodel?: string; items: PartItem[] }
+  | { id: string; role: "bot"; type: "no-results"; query: string };
 
 export type FlowStep = { delay?: number; message: ChatMessage };
 
