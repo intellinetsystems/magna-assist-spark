@@ -56,7 +56,7 @@ export function Assistant() {
   const [confirmClose, setConfirmClose] = useState(false);
   const timersRef = useRef<number[]>([]);
   // Pending state for the multi-step part flow
-  const partFlowRef = useRef<{ model?: string; variant?: string; query?: string }>({});
+  const partFlowRef = useRef<{ attachment?: string; model?: string; variant?: string; figure?: string; query?: string }>({});
 
   // Load persisted session
   useEffect(() => {
