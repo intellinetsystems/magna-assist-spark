@@ -308,6 +308,57 @@ export function Assistant() {
     }, 250);
   }, []);
 
+  // Quick Reference handlers
+  const qrRef = useRef<{ category?: string; series?: string; submodel?: string }>({});
+  const onQuickRefPick = useCallback((category: string) => {
+    qrRef.current = { category };
+    pushMessage({ id: newId(), role: "user", type: "text", text: category });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${category}** — choose a Series:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-series", category }), 300);
+    }, 250);
+  }, []);
+  const onQuickRefSeries = useCallback((series: string) => {
+    const category = qrRef.current.category ?? "Quick Reference";
+    qrRef.current.series = series;
+    pushMessage({ id: newId(), role: "user", type: "text", text: series });
+    const hasSubmodels = !!quickRefSubmodels[series]?.length;
+    setTimeout(() => {
+      if (hasSubmodels) {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `**${category} → ${series}** — pick a sub-model:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-submodel", category, series }), 300);
+      } else {
+        const items = buildQuickRefItems(category, series);
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the items in **${category} → ${series}**:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category, series, items }), 300);
+      }
+    }, 250);
+  }, []);
+  const onQuickRefSubmodel = useCallback((submodel: string) => {
+    const { category = "Quick Reference", series = "" } = qrRef.current;
+    qrRef.current.submodel = submodel;
+    pushMessage({ id: newId(), role: "user", type: "text", text: submodel });
+    setTimeout(() => {
+      const items = buildQuickRefItems(category, series, submodel);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Items in **${category} → ${series} → ${submodel}**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category, series, submodel, items }), 300);
+    }, 250);
+  }, []);
+
+  // Out-of-stock → ticket
+  const onPartCreateTicket = useCallback((p: PartItem) => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: `Create a ticket — ${p.partNo} is out of stock` });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${p.partNo}** (${p.description}) is out of stock. I've logged this as a **High Priority** restock request. Please confirm or change priority:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "priority" }), 300);
+    }, 250);
+  }, []);
+  const onNoResultsTicket = useCallback(() => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: "Yes, raise a ticket" });
+    setTimeout(() => runFlow("create-ticket"), 200);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function newChat() {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
