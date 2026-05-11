@@ -7,8 +7,8 @@ import {
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
-  ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, type PartItem,
+  ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta, buildLastOrderNoEta, buildOrder1111, buildOrder7777,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, findPart, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
@@ -146,24 +146,83 @@ export function Assistant() {
     if (!text) return;
     pushMessage({ id: newId(), role: "user", type: "text", text });
     setInput("");
+    const lower = text.toLowerCase();
 
-    // Direct part-number lookup — skip the model/variant flow when an exact part no is provided.
-    const partMatch = text.match(/KMW[A-Z0-9]+/i);
-    if (partMatch) {
-      const items = searchParts(partMatch[0], "", "");
-      if (items.length >= 1 && items[0].partNo.toLowerCase() === partMatch[0].toLowerCase()) {
-        const part = items[0];
+    // FLOW 8/9 — explicit order numbers
+    if (/\border\s*(#|number|no\.?)?\s*1111\b/i.test(text)) { setTimeout(() => runSteps(buildOrder1111()), 200); return; }
+    if (/\border\s*(#|number|no\.?)?\s*7777\b/i.test(text)) { setTimeout(() => runSteps(buildOrder7777()), 200); return; }
+
+    // FLOW 7 — last order ETA / no ETA
+    if (/(eta|status).*(last|recent)\s*order|check.*eta.*order|my last order/i.test(text)) {
+      setTimeout(() => runSteps(buildLastOrderNoEta()), 200); return;
+    }
+
+    // FLOW 5/6 — direct quick-ref ("key for 05 series", "hydraulic filter for 15 series")
+    const seriesMatch = text.match(/(00|05|10|15|16|20|25|1500|1600|2500)\s*series/i);
+    if (seriesMatch && /\b(key|filter)/i.test(text)) {
+      const isKey = /\bkey/i.test(text);
+      const category = isKey ? "KEY LIST" : "FILTER LIST";
+      const series = `${seriesMatch[1]} Series`;
+      const items = buildQuickRefItems(category, series);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: isKey ? `Here is the **key list** for the **${series}** tractors.` : `I found the **hydraulic filters** for the **${series}** tractors.` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category, series, items }), 300);
+      }, 850);
+      return;
+    }
+
+    // FLOW 4 — "I want key" with no series → ask for series
+    if (/^(i\s*want\s*|show\s*|need\s*)?(a\s*)?key$/i.test(text) || /\bkey\b.*tractor/i.test(text)) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Sure — for which **tractor series** do you need the key?" }), 200);
+      qrRef.current = { category: "KEY LIST" };
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-series", category: "KEY LIST" }), 600);
+      return;
+    }
+
+    // FLOW 3 — Swinging Drawbar attachment for 4500 2WD
+    if (/(swinging\s*drawbar|drawbar\s*attachment)/i.test(text) && /(4500|00\s*series)/i.test(text)) {
+      const part = findPart("E007900403C11");
+      if (part) {
+        const tagged = { ...part, searchTags: ["00 Series", "4500 2WD", "Swinging Drawbar", "Plate Support RH"] };
         setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
         setTimeout(() => {
-          pushMessage({ id: newId(), role: "bot", type: "text", text: `Found it — **${part.partNo}** (${part.description}) from **${part.model} / ${part.variant}**, assembly *${part.assembly}*.` });
+          pushMessage({ id: newId(), role: "bot", type: "text", text: "I found the **SWINGING DRAWBAR ATTACHMENT** for **4500 2WD**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**." });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: tagged }), 300);
+        }, 900);
+        return;
+      }
+    }
+
+    // FLOW 1 — exact part-no lookup
+    const partMatch = text.match(/\b(KMW[A-Z0-9]+|E\d{6,}[A-Z0-9]*)\b/i);
+    if (partMatch) {
+      const part = findPart(partMatch[0]);
+      if (part) {
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `I found the **${part.description}** for the **${part.aggregate}** attachment.` });
           setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
         }, 900);
         return;
       }
     }
 
+    // FLOW 2 — description "hydraulic adapter 90" → unique part
+    if (/hydraulic\s*adapter.*90/i.test(text) && !/45/i.test(text)) {
+      const part = findPart("KMW05863108408");
+      if (part) {
+        const tagged = { ...part, searchTags: ["Backhoe", "Hydraulic", "Adapter", "90°"] };
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: "Here is the matching **Hydraulic Adapter, 90°** used in the **Backhoe** attachment." });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: tagged }), 300);
+        }, 900);
+        return;
+      }
+    }
+
     // Description-based lookup — short keyword like "valve", "hex nut", "hydraulic adapter".
-    // If unique → jump straight to detail. If multiple → ask model/variant hierarchy first.
     const descKeyword = /\b(valve|adapter|fitting|hex\s*nut|hex\s*head|cap\s*screw|screw|lockwasher|washer|hydraulic|backhoe)\b/i;
     if (descKeyword.test(text) && !/order|ticket|eta|track|missing|wrong|filter|key/i.test(text)) {
       const items = searchParts(text, "", "");
@@ -171,7 +230,7 @@ export function Assistant() {
         const part = items[0];
         setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
         setTimeout(() => {
-          pushMessage({ id: newId(), role: "bot", type: "text", text: `Found it — **${part.partNo}** (${part.description}) from **${part.model} / ${part.variant}**, assembly *${part.assembly}*.` });
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Found it — **${part.partNo}** (${part.description}).` });
           setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
         }, 900);
         return;
@@ -187,6 +246,7 @@ export function Assistant() {
       }
     }
 
+    void lower;
     const trigger = flowTriggers.find((t) => t.match.test(text));
     const flow = trigger?.flow ?? "create-ticket";
     setTimeout(() => runFlow(flow), 200);
@@ -289,15 +349,19 @@ export function Assistant() {
     }, 250);
   }, []);
 
-  const onCreateTicketEta = useCallback(() => {
+  const onCreateTicketEta = useCallback((ticketId?: string) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: "Yes, create a ticket" });
-    setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
+    if (ticketId) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Your support ticket has been created successfully." }), 500);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "ticket", ticketId }), 1000);
+    } else {
+      setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
+    }
   }, []);
 
   const onCheckLater = useCallback(() => {
-    const t = new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    toast.success(`We'll re-check at ${t}`);
-    pushMessage({ id: newId(), role: "bot", type: "text", text: `No problem — I'll re-check at **${t}** and notify you.` });
+    pushMessage({ id: newId(), role: "user", type: "text", text: "No" });
+    setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "No problem. Is there anything else I can help you with?" }), 400);
   }, []);
 
   const onAccessoryPick = useCallback((kind: "Filter" | "Key", series: string) => {
@@ -394,7 +458,7 @@ export function Assistant() {
       setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "ticket", ticketId: "EPC-61485" }), 800);
     }} />;
     if (m.type === "ticket") return <TicketCard key={m.id} ticketId={m.ticketId} />;
-    if (m.type === "tracking") return <TrackingCardEx key={m.id} orderId={m.orderId} eta={m.eta} />;
+    if (m.type === "tracking") return <TrackingCardEx key={m.id} orderId={m.orderId} eta={m.eta} carrier={m.carrier} status={m.status} partNos={m.partNos} />;
     if (m.type === "attachment-picker") return <AttachmentPickerCard key={m.id} onSubmit={onAttachmentPick} />;
     if (m.type === "model-picker") return <ModelPickerCard key={m.id} attachment={m.attachment} onSubmit={onModelPick} />;
     if (m.type === "variant-picker") return <VariantPickerCard key={m.id} model={m.model} onSubmit={onVariantPick} />;
@@ -403,7 +467,7 @@ export function Assistant() {
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
-    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={onCreateTicketEta} onCheckLater={onCheckLater} />;
+    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} partNos={m.partNos} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
     if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;

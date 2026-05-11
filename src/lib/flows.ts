@@ -15,6 +15,8 @@ export type PartItem = {
   mrp: number;
   inStock: number;
   isQuickRef?: boolean;
+  searchTags?: string[];   // AI tag chips shown above illustration
+  highlight?: "red" | "purple"; // pill / overlay color
 };
 
 export type ChatMessage =
@@ -22,9 +24,9 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "typing" }
   | { id: string; role: "bot"; type: "priority" }
   | { id: string; role: "bot"; type: "ticket"; ticketId: string }
-  | { id: string; role: "bot"; type: "tracking"; orderId: string; eta: string }
-  | { id: string; role: "bot"; type: "order-header"; orderId: string; placed: string; items: number; total: string }
-  | { id: string; role: "bot"; type: "eta-pending"; orderId: string }
+  | { id: string; role: "bot"; type: "tracking"; orderId: string; eta: string; carrier?: string; status?: string; partNos?: string[] }
+  | { id: string; role: "bot"; type: "order-header"; orderId: string; placed: string; items: number; total: string; partNos?: string[] }
+  | { id: string; role: "bot"; type: "eta-pending"; orderId: string; ticketId?: string; partNos?: string[] }
   | { id: string; role: "bot"; type: "attachment-picker" }
   | { id: string; role: "bot"; type: "model-picker"; attachment: string }
   | { id: string; role: "bot"; type: "variant-picker"; attachment: string; model: string }
@@ -61,15 +63,16 @@ export const quickActions = [
 
 // Mahindra Tractors USA - popular models
 export const popularModels = [
-  "1526 Backhoe", "2638 HST", "4540 4WD", "6075 PST", "eMax 20S HST", "Max 26XLT", "9125 S", "Retriever 1000",
+  "1526 Backhoe", "2638 HST", "4500 2WD", "4540 4WD", "6075 PST", "eMax 20S HST", "Max 26XLT", "9125 S",
 ];
 export const moreModels = [
-  "1533 HST", "1635 Shuttle", "3640 PST", "5145 4WD", "7095 S Cab", "8090 PST Cab", "Roxor", "eMax 22L",
+  "1533 HST", "1635 Shuttle", "3640 PST", "5145 4WD", "7095 S Cab", "8090 PST Cab", "Roxor", "eMax 22L", "Retriever 1000",
 ];
 
 export const variantsByModel: Record<string, string[]> = {
   "1526 Backhoe": ["1526B", "1526L", "1526 HST 4WD"],
   "2638 HST": ["Open Station ROPS", "Cab", "HST 4WD with Loader & Backhoe"],
+  "4500 2WD": ["4500 2WD"],
   "4540 4WD": ["2WD ROPS", "4WD ROPS", "4WD Cab"],
   "6075 PST": ["PST Cab", "PST ROPS", "Power Shuttle 4WD"],
   "eMax 20S HST": ["Open Station", "with Loader", "with Mid-Mount Mower"],
@@ -91,9 +94,10 @@ export const modelsByAttachment: Record<string, string[]> = {
   "Backhoe": ["1526 Backhoe", "Max 26XLT", "2638 HST"],
   "Loader": ["1526 Backhoe", "4540 4WD", "6075 PST", "eMax 20S HST"],
   "Mower": ["eMax 20S HST", "Max 26XLT"],
-  "Implements": ["4540 4WD", "6075 PST", "9125 S"],
+  "Implements": ["4500 2WD", "4540 4WD", "6075 PST", "9125 S"],
   "Hay Tools & Equipment": ["6075 PST", "9125 S"],
   "New Implements": ["1526 Backhoe", "Max 26XLT", "4540 4WD"],
+  "Swinging Drawbar": ["4500 2WD"],
 };
 
 // Available assembly figures per (model + variant). Default keyed by variant.
@@ -106,6 +110,9 @@ export const assembliesByVariant: Record<string, { figure: string; label: string
   "1526L": [
     { figure: "1526L - FIG 002", label: "Loader Frame & Hardware (FIG 002)" },
     { figure: "1526L - FIG 003", label: "Loader Hydraulic Lines (FIG 003)" },
+  ],
+  "4500 2WD": [
+    { figure: "4500-2WD - DRAWBAR", label: "Swinging Drawbar Attachment (00 Series)" },
   ],
 };
 export const defaultAssemblies: { figure: string; label: string }[] = [
@@ -155,6 +162,16 @@ const backhoeValveParts: PartItem[] = [
   { partNo: "KMW05442009", description: "LOCKWASHER 5/16 (Note 2)", category: "Hardware", vehicle: "Backhoe", model: "1526 Backhoe", variant: "1526B", aggregate: "Backhoe", groupNo: "G-008", assembly: "Backhoe Valve, Fittings & Hardware", figure: "1526B - FIG 008", refNo: 10, qty: 2, cost: 0.35, mrp: 0.95, inStock: 880 },
 ];
 
+// SWINGING DRAWBAR ATTACHMENT — 00 Series, Variant 4500 2WD (uploaded illustration)
+const drawbarParts: PartItem[] = [
+  { partNo: "E007900403C12", description: "ASSLY PLATE DRAWBAR SUPPORT LH", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 2, qty: 1, cost: 32.50, mrp: 48.95, inStock: 14 },
+  { partNo: "E007900403C11", description: "ASSLY PLATE DRAWBAR SUPPORT RH", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 4, qty: 1, cost: 32.50, mrp: 48.95, inStock: 11, highlight: "purple" },
+  { partNo: "E0079DBR005", description: "DRAWBAR PIN", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 5, qty: 1, cost: 9.10, mrp: 14.20, inStock: 38 },
+  { partNo: "E0079DBR009A", description: "DRAWBAR LOCK CLIP (Pair)", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 9, qty: 2, cost: 6.20, mrp: 9.95, inStock: 60 },
+  { partNo: "E0079DBR012", description: "HEX BOLT M12 x 60", category: "Hardware", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 12, qty: 4, cost: 0.85, mrp: 1.65, inStock: 420 },
+];
+
+const allCatalogParts: PartItem[] = [...backhoeValveParts, ...drawbarParts];
 const sampleParts: PartItem[] = backhoeValveParts;
 
 // Generic Quick Reference item builder. One demo SKU per category is intentionally
@@ -187,21 +204,26 @@ export const buildFilters = (series: string) => buildQuickRefItems("FILTER LIST"
 export const buildKeys = (series: string) => buildQuickRefItems("KEY LIST", series);
 
 export function partsByFigure(figure: string): PartItem[] {
-  const items = sampleParts.filter((p) => p.figure === figure);
+  const items = allCatalogParts.filter((p) => p.figure === figure);
   return items.length ? items : sampleParts;
 }
 
 export function searchParts(query: string, model: string, variant: string): PartItem[] {
   const q = query.trim().toLowerCase();
   // Exact part-no match returns 1
-  const exact = sampleParts.find((p) => p.partNo.toLowerCase() === q);
+  const exact = allCatalogParts.find((p) => p.partNo.toLowerCase() === q);
   if (exact) return [exact];
   // Description / category contains
-  const matches = sampleParts.filter(
+  const matches = allCatalogParts.filter(
     (p) => p.description.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.partNo.toLowerCase().includes(q)
   );
   if (matches.length) return matches;
   return sampleParts.map((p) => ({ ...p, model: model || p.model, variant: variant || p.variant }));
+}
+
+// Look up a single part by partNo across the entire mock catalogue.
+export function findPart(partNo: string): PartItem | undefined {
+  return allCatalogParts.find((p) => p.partNo.toLowerCase() === partNo.toLowerCase());
 }
 
 export type FlowKey =
@@ -282,5 +304,35 @@ export function buildCreateTicketFromEta(): FlowStep[] {
   return [
     { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Got it. I'll log this as a **High Priority** request to fetch the ETA from the carrier. Please confirm or change priority:" } },
     { delay: 200, message: { id: uid(), role: "bot", type: "priority" } },
+  ];
+}
+
+// FLOW 7 — last order, no ETA, escalate → SUP-45821
+export function buildLastOrderNoEta(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Sure — let me check your last order…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Your last order was placed on **May 2, 2026**.\n\n**Ordered Parts:**\n• KMW05863108408 — HYDRAULIC Adapter, 90°\n• E007900403C11 — ASSLY PLATE DRAWBAR SUPPORT RH\n\nThe order has not been dispatched yet, so ETA is not available currently." } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "1004221", ticketId: "SUP-45821", partNos: ["KMW05863108408", "E007900403C11"] } },
+  ];
+}
+
+// FLOW 8 — Order #1111 dispatched, BlueDart, ETA 15 May 2026
+export function buildOrder1111(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Looking up order **#1111**…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Order **#1111** has been dispatched.\n\n**Estimated Delivery Date:** May 15, 2026\n**Current Status:** In Transit\n**Courier Partner:** BlueDart" } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "tracking", orderId: "1111", eta: "15 May 2026", carrier: "BlueDart", status: "In Transit", partNos: ["KMW05863108408", "E007900403C11"] } },
+  ];
+}
+
+// FLOW 9 — Order #7777 not dispatched, offer ticket
+export function buildOrder7777(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Checking order **#7777**…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Order **#7777** is currently under processing and has not been dispatched yet.\n\nETA is not available currently." } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "7777", ticketId: "SUP-45822" } },
   ];
 }
