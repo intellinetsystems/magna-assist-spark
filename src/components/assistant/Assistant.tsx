@@ -15,7 +15,7 @@ import {
 } from "./MessageBubbles";
 import {
   AttachmentPickerCard, ModelPickerCard, VariantPickerCard, AssemblyPickerCard, PartQueryCard, ResultListCard,
-  PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
+  PartDetailCard, OrderHeaderCard, EtaPendingCard, OrderConfirmCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
 } from "./GuidedCards";
@@ -28,13 +28,24 @@ const qaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   Package, Replace, Ticket, CheckCircle,
 };
 
-const historyMock = [
-  "Order Detail Analysis from 1-Jan-2023 to 16-Jun-2025 of 'Auto Motors Co. HCV'",
-  "Top 5 Selling Parts",
-  "Compare Cost Of Quarter 1 & Quarter 2, 2024",
-];
+type ChatHistoryItem = { id: string; title: string; messages: ChatMessage[]; updated: number };
 
 const STORAGE_KEY = "magna_ai_session";
+const HISTORY_KEY = "magna_ai_history";
+const SETTINGS_KEY = "magna_ai_settings";
+
+type Settings = {
+  voice: "female-en" | "male-en" | "female-hi";
+  language: "en-US" | "en-IN" | "hi-IN";
+  notifications: boolean;
+  autoListen: boolean;
+  responseStyle: "concise" | "detailed";
+  theme: "light" | "system";
+};
+const defaultSettings: Settings = {
+  voice: "female-en", language: "en-US", notifications: true,
+  autoListen: false, responseStyle: "concise", theme: "light",
+};
 
 // Strip non-serializable / interactive prompts before persisting
 function persistable(messages: ChatMessage[]): ChatMessage[] {
@@ -56,11 +67,15 @@ export function Assistant() {
   const [unread, setUnread] = useState(false);
   const [etaAvailable, setEtaAvailable] = useState(true);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const timersRef = useRef<number[]>([]);
   // Pending state for the multi-step part flow
   const partFlowRef = useRef<{ attachment?: string; model?: string; variant?: string; figure?: string; query?: string }>({});
 
-  // Load persisted session
+  // Load persisted session + history + settings
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -68,8 +83,31 @@ export function Assistant() {
         const parsed = JSON.parse(raw) as ChatMessage[];
         if (Array.isArray(parsed)) setMessages(parsed);
       }
+      const hRaw = localStorage.getItem(HISTORY_KEY);
+      if (hRaw) {
+        const parsed = JSON.parse(hRaw) as ChatHistoryItem[];
+        if (Array.isArray(parsed)) setChatHistory(parsed);
+      }
+      const sRaw = localStorage.getItem(SETTINGS_KEY);
+      if (sRaw) setSettings({ ...defaultSettings, ...JSON.parse(sRaw) });
     } catch { /* ignore */ }
   }, []);
+  useEffect(() => { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory)); } catch { /* ignore */ } }, [chatHistory]);
+  useEffect(() => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* ignore */ } }, [settings]);
+
+  // Auto-record current conversation into history (live updates)
+  useEffect(() => {
+    const userMsgs = messages.filter((m) => m.role === "user" && m.type === "text") as Extract<ChatMessage, { type: "text" }>[];
+    if (!userMsgs.length) return;
+    const title = userMsgs[0].text.slice(0, 80);
+    setChatHistory((prev) => {
+      const id = activeChatId ?? prev.find((c) => c.title === title)?.id ?? newId();
+      if (!activeChatId) setActiveChatId(id);
+      const without = prev.filter((c) => c.id !== id);
+      return [{ id, title, messages, updated: Date.now() }, ...without].slice(0, 30);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
 
   // Persist
   useEffect(() => {
@@ -263,10 +301,14 @@ export function Assistant() {
   function handleSuggestion(s: string) {
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
+      "Order Part": "part-search",
       "Browse Quick Reference": "quick-reference",
       "Track my last order": "track-eta",
+      "Check Availability": "quick-reference",
+      "Find Alternate Part": "part-search",
       "Report an order issue": "wrong-part",
       "Create a service ticket": "create-ticket",
+      "Create Ticket": "create-ticket",
     };
     const flow = map[s] ?? "create-ticket";
     const trigger = flowTriggers.find((t) => t.flow === flow);
@@ -445,11 +487,43 @@ export function Assistant() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  function saveCurrentToHistory() {
+    const userMsgs = messages.filter((m) => m.role === "user" && m.type === "text") as Extract<ChatMessage, { type: "text" }>[];
+    if (!userMsgs.length) return;
+    const title = userMsgs[0].text.slice(0, 80);
+    const id = activeChatId ?? newId();
+    setChatHistory((prev) => {
+      const without = prev.filter((c) => c.id !== id);
+      return [{ id, title, messages, updated: Date.now() }, ...without].slice(0, 30);
+    });
+    setActiveChatId(id);
+  }
+
   function newChat() {
+    saveCurrentToHistory();
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
     setMessages([]);
+    setActiveChatId(null);
     partFlowRef.current = {};
+  }
+
+  function loadChat(c: ChatHistoryItem) {
+    saveCurrentToHistory();
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setMessages(c.messages);
+    setActiveChatId(c.id);
+  }
+
+  function clearAllConversations() {
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    setMessages([]);
+    setChatHistory([]);
+    setActiveChatId(null);
+    try { localStorage.removeItem(HISTORY_KEY); localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+    toast.success("All conversations cleared");
   }
 
   function endSession() {
@@ -488,7 +562,15 @@ export function Assistant() {
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
-    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} partNos={m.partNos} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
+    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
+    if (m.type === "order-confirm") return <OrderConfirmCard key={m.id} orderId={m.orderId} placed={m.placed} parts={m.parts} onYes={() => {
+      pushMessage({ id: newId(), role: "user", type: "text", text: "Yes" });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `Order **#${m.orderId}** has not been dispatched yet, so ETA is not available currently.` }), 350);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "eta-pending", orderId: m.orderId, ticketId: m.ticketId }), 800);
+    }} onNo={() => {
+      pushMessage({ id: newId(), role: "user", type: "text", text: "No" });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "No problem — please share the order number you'd like to check." }), 400);
+    }} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
     if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;
@@ -545,6 +627,7 @@ export function Assistant() {
                 onClose={endSession}
                 onNewChat={newChat}
                 showMax
+                onQuickAction={handleSuggestion}
               />
               <Thread
                 messages={messages}
@@ -600,26 +683,36 @@ export function Assistant() {
               </div>
               <div className="px-5 mt-5 mb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Chat History</div>
               <div className="px-3 space-y-1 flex-1 overflow-auto scrollbar-thin">
-                {historyMock.map((h, i) => (
-                  <button key={i} className={`w-full text-left flex items-start gap-2 px-3 py-2 rounded-xl text-xs leading-snug hover:bg-white transition border ${i === 0 ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--ink-900)]" : "border-transparent text-[var(--ink-700)]"}`}>
-                    <MessageCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--brand-600)]" />
-                    <span className="line-clamp-2">{h}</span>
-                  </button>
-                ))}
+                {chatHistory.length === 0 && (
+                  <div className="px-3 py-2 text-[11px] text-[var(--ink-500)] italic">No chats yet — start one below.</div>
+                )}
+                {chatHistory.map((c) => {
+                  const active = c.id === activeChatId;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => loadChat(c)}
+                      className={`w-full text-left flex items-start gap-2 px-3 py-2 rounded-xl text-xs leading-snug hover:bg-white transition border ${active ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--ink-900)]" : "border-transparent text-[var(--ink-700)]"}`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--brand-600)]" />
+                      <span className="line-clamp-2">{c.title}</span>
+                    </button>
+                  );
+                })}
               </div>
               <div className="p-3 border-t border-black/5 space-y-1">
-                {[
-                  { Icon: HelpCircle, label: "Help", chev: true },
-                  { Icon: Settings, label: "Settings" },
-                  { Icon: Trash2, label: "Clear conversations" },
-                  { Icon: LogOut, label: "Log out" },
-                ].map(({ Icon, label, chev }) => (
-                  <button key={label} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
-                    <Icon className="w-4 h-4" />
-                    <span className="flex-1 text-left">{label}</span>
-                    {chev && <ChevronRight className="w-3 h-3" />}
-                  </button>
-                ))}
+                <button onClick={() => toast("Help center coming soon")} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <HelpCircle className="w-4 h-4" /><span className="flex-1 text-left">Help</span><ChevronRight className="w-3 h-3" />
+                </button>
+                <button onClick={() => setSettingsOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <Settings className="w-4 h-4" /><span className="flex-1 text-left">Settings</span>
+                </button>
+                <button onClick={clearAllConversations} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <Trash2 className="w-4 h-4" /><span className="flex-1 text-left">Clear conversations</span>
+                </button>
+                <button onClick={() => { endSession(); toast("Logged out"); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <LogOut className="w-4 h-4" /><span className="flex-1 text-left">Log out</span>
+                </button>
               </div>
             </aside>
 
@@ -633,6 +726,8 @@ export function Assistant() {
                 onClose={() => setConfirmClose(true)}
                 onNewChat={newChat}
                 showMin
+                hideBrand
+                onQuickAction={handleSuggestion}
               />
               <Thread
                 messages={messages}
@@ -679,11 +774,13 @@ export function Assistant() {
           </div>
         )}
       </AnimatePresence>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} setSettings={setSettings} onClearAll={clearAllConversations} />
     </>
   );
 }
 
-function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin }: {
+function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin, hideBrand, onQuickAction }: {
   listening: boolean;
   quickOpen: boolean;
   setQuickOpen: (v: boolean) => void;
@@ -693,14 +790,18 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
   onNewChat: () => void;
   showMax?: boolean;
   showMin?: boolean;
+  hideBrand?: boolean;
+  onQuickAction?: (label: string) => void;
 }) {
   return (
     <div className="relative h-14 px-3 border-b border-black/5 flex items-center gap-2 bg-white/80 backdrop-blur">
-      <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
-        <Zap className="w-4 h-4 text-white" fill="currentColor" />
-      </div>
+      {!hideBrand && (
+        <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
+          <Zap className="w-4 h-4 text-white" fill="currentColor" />
+        </div>
+      )}
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI</div>
+        {!hideBrand && <div className="text-[13px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI</div>}
         <div className="text-[10px] text-[var(--ink-500)] leading-tight flex items-center gap-1">
           <span className={`w-1.5 h-1.5 rounded-full ${listening ? "bg-emerald-500 animate-pulse" : "bg-emerald-400"}`} />
           {listening ? "Listening…" : "Online"}
@@ -736,7 +837,11 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
               {quickActions.map((q) => {
                 const Icon = qaIcons[q.icon];
                 return (
-                  <button key={q.label} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]">
+                  <button
+                    key={q.label}
+                    onClick={() => { setQuickOpen(false); onQuickAction?.(q.label); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
+                  >
                     <Icon className="w-4 h-4 text-[var(--brand-600)]" /> {q.label}
                   </button>
                 );
@@ -858,70 +963,186 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
   onStartCall: () => void;
   inCall: boolean;
 }) {
+  // ChatGPT-style composer: text input is always visible; call/mute live inside the bar.
+  void textMode; void setTextMode;
   return (
-    <div className="border-t border-black/5 bg-white/90 backdrop-blur p-4">
-      {textMode && (
-        <form
-          onSubmit={(e) => { e.preventDefault(); onSend(); }}
-          className="mb-3 flex items-center gap-2 bg-[var(--surface-1)] border border-black/5 rounded-2xl px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--brand-200)]"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Message Mahindra AI Assistant…"
-            aria-label="Type a message"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--ink-500)]"
-          />
-          <button type="submit" aria-label="Send" className="w-8 h-8 rounded-full bg-gradient-brand text-white flex items-center justify-center hover:opacity-95 shadow-soft">
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
-      )}
-      <div className="flex items-center justify-center gap-4">
+    <div className="border-t border-black/5 bg-white/90 backdrop-blur p-3">
+      <form
+        onSubmit={(e) => { e.preventDefault(); onSend(); }}
+        className="flex items-end gap-2 bg-[var(--surface-1)] border border-black/10 rounded-3xl px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--brand-200)]"
+      >
+        {/* Mic — toggles mute when in a call; otherwise starts a call */}
         <button
-          onClick={toggleMic}
-          disabled={!inCall}
-          aria-label={listening ? "Mute microphone" : "Unmute microphone"}
-          className={`w-11 h-11 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2 ${
-            !inCall
-              ? "bg-white border-black/10 text-[var(--ink-500)] opacity-50 cursor-not-allowed"
-              : listening
-              ? "bg-[var(--brand-50)] border-[var(--brand-500)] text-[var(--brand-600)] ring-4 ring-[var(--brand-200)]/40 animate-pulse"
-              : "bg-white border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-2)]"
+          type="button"
+          onClick={() => { if (inCall) toggleMic(); else onStartCall(); }}
+          aria-label={inCall ? (listening ? "Mute microphone" : "Unmute microphone") : "Start voice input"}
+          title={inCall ? (listening ? "Mute" : "Unmute") : "Voice input"}
+          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition ${
+            inCall && listening
+              ? "bg-[var(--brand-600)] text-white ring-4 ring-[var(--brand-200)]/40 animate-pulse"
+              : "bg-white border border-black/10 text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
           }`}
         >
-          {listening && inCall ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          {inCall && !listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
+
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          placeholder="Message MAgNA AI…"
+          rows={1}
+          aria-label="Type a message"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--ink-500)] resize-none max-h-32 py-1.5"
+        />
+
+        {/* Call / hang-up */}
         {inCall ? (
           <button
+            type="button"
             onClick={onEnd}
             aria-label="Hang up call"
-            className="w-14 h-14 rounded-full bg-gradient-brand text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
+            title="Hang up"
+            className="w-9 h-9 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shrink-0"
           >
-            <PhoneOff className="w-6 h-6" />
+            <PhoneOff className="w-4 h-4" />
           </button>
         ) : (
           <button
+            type="button"
             onClick={onStartCall}
             aria-label="Call MAgNA AI"
-            className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+            title="Voice call"
+            className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shrink-0"
           >
-            <Phone className="w-6 h-6" />
+            <Phone className="w-4 h-4" />
           </button>
         )}
+
+        {/* Send */}
         <button
-          onClick={() => setTextMode(!textMode)}
-          aria-label="Toggle text input"
-          className={`w-11 h-11 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2 ${
-            textMode ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-2)]"
-          }`}
+          type="submit"
+          aria-label="Send"
+          disabled={!input.trim()}
+          className="w-9 h-9 rounded-full bg-gradient-brand text-white flex items-center justify-center hover:opacity-95 shadow-soft shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <MessageSquare className="w-5 h-5" />
+          <Send className="w-4 h-4" />
         </button>
-      </div>
+      </form>
       <p className="text-center text-[10px] text-[var(--ink-500)] mt-2">
         MAgNA AI may make mistakes — verify critical info.
       </p>
     </div>
+  );
+}
+
+function SettingsModal({ open, onClose, settings, setSettings, onClearAll }: {
+  open: boolean;
+  onClose: () => void;
+  settings: Settings;
+  setSettings: (s: Settings) => void;
+  onClearAll: () => void;
+}) {
+  if (!open) return null;
+  const update = <K extends keyof Settings>(k: K, v: Settings[K]) => setSettings({ ...settings, [k]: v });
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-6" onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.96, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-3xl p-6 max-w-md w-full shadow-soft-lg max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-base font-semibold text-[var(--ink-900)]">Settings</div>
+            <div className="text-xs text-[var(--ink-500)]">Personalize your MAgNA AI experience</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
+        </div>
+
+        <Section title="Voice & Language">
+          <Row label="Assistant voice">
+            <select value={settings.voice} onChange={(e) => update("voice", e.target.value as Settings["voice"])} className="text-xs bg-[var(--surface-1)] border border-black/10 rounded-lg px-2 py-1.5">
+              <option value="female-en">Aria (Female · English)</option>
+              <option value="male-en">Atlas (Male · English)</option>
+              <option value="female-hi">Anaya (Female · Hindi)</option>
+            </select>
+          </Row>
+          <Row label="Language">
+            <select value={settings.language} onChange={(e) => update("language", e.target.value as Settings["language"])} className="text-xs bg-[var(--surface-1)] border border-black/10 rounded-lg px-2 py-1.5">
+              <option value="en-US">English (US)</option>
+              <option value="en-IN">English (India)</option>
+              <option value="hi-IN">हिन्दी (Hindi)</option>
+            </select>
+          </Row>
+          <Row label="Auto-listen on call start">
+            <Toggle on={settings.autoListen} onChange={(v) => update("autoListen", v)} />
+          </Row>
+        </Section>
+
+        <Section title="Responses">
+          <Row label="Response style">
+            <div className="flex gap-1">
+              {(["concise", "detailed"] as const).map((v) => (
+                <button key={v} onClick={() => update("responseStyle", v)} className={`text-xs px-3 py-1.5 rounded-full border ${settings.responseStyle === v ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)]"}`}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </Row>
+        </Section>
+
+        <Section title="Notifications">
+          <Row label="Order & ticket updates">
+            <Toggle on={settings.notifications} onChange={(v) => update("notifications", v)} />
+          </Row>
+        </Section>
+
+        <Section title="Appearance">
+          <Row label="Theme">
+            <div className="flex gap-1">
+              {(["light", "system"] as const).map((v) => (
+                <button key={v} onClick={() => update("theme", v)} className={`text-xs px-3 py-1.5 rounded-full border ${settings.theme === v ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)]"}`}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </Row>
+        </Section>
+
+        <Section title="Data">
+          <button onClick={() => { onClearAll(); onClose(); }} className="w-full text-xs px-3 py-2 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 inline-flex items-center justify-center gap-1.5">
+            <Trash2 className="w-3.5 h-3.5" /> Clear all conversations
+          </button>
+        </Section>
+
+        <div className="text-[10px] text-[var(--ink-500)] text-center mt-4">MAgNA AI Assistant · v1.0.0</div>
+      </motion.div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-4">
+      <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">{title}</div>
+      <div className="space-y-2 bg-[var(--surface-1)] rounded-2xl p-3 border border-black/5">{children}</div>
+    </div>
+  );
+}
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="text-xs text-[var(--ink-700)]">{label}</div>
+      {children}
+    </div>
+  );
+}
+function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button onClick={() => onChange(!on)} aria-pressed={on} className={`w-10 h-6 rounded-full transition relative ${on ? "bg-[var(--brand-600)]" : "bg-[var(--ink-300)]"}`}>
+      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${on ? "left-[18px]" : "left-0.5"}`} />
+    </button>
   );
 }

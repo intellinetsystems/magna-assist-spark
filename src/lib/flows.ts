@@ -27,6 +27,7 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "tracking"; orderId: string; eta: string; carrier?: string; status?: string; partNos?: string[] }
   | { id: string; role: "bot"; type: "order-header"; orderId: string; placed: string; items: number; total: string; partNos?: string[] }
   | { id: string; role: "bot"; type: "eta-pending"; orderId: string; ticketId?: string; partNos?: string[] }
+  | { id: string; role: "bot"; type: "order-confirm"; orderId: string; placed: string; parts: number; ticketId?: string }
   | { id: string; role: "bot"; type: "attachment-picker" }
   | { id: string; role: "bot"; type: "model-picker"; attachment: string }
   | { id: string; role: "bot"; type: "variant-picker"; attachment: string; model: string }
@@ -312,8 +313,8 @@ export function buildLastOrderNoEta(): FlowStep[] {
   return [
     { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Sure — let me check your last order…" } },
     { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
-    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Your last order was placed on **May 2, 2026**.\n\n**Ordered Parts:**\n• KMW05863108408 — HYDRAULIC Adapter, 90°\n• E007900403C11 — ASSLY PLATE DRAWBAR SUPPORT RH\n\nThe order has not been dispatched yet, so ETA is not available currently." } },
-    { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "1004221", ticketId: "SUP-45821", partNos: ["KMW05863108408", "E007900403C11"] } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Your last order was **#1004221**, placed on **May 2, 2026**, with **53 parts**. Is this the order you are referring to?" } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "order-confirm", orderId: "1004221", placed: "May 2, 2026", parts: 53, ticketId: "SUP-45821" } },
   ];
 }
 

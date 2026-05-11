@@ -371,10 +371,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
     { type: "3d", icon: Box, name: "Model.glb", size: "3.2 MB", color: "text-indigo-600 bg-indigo-50", action: "View 3D" },
     { type: "image", icon: ImageIcon, name: "Hi-res_Photos", size: "4 images", color: "text-amber-600 bg-amber-50", action: "Preview" },
   ];
-  const alternates = [
-    { partNo: "KMW05863108408", mrp: 27.95 }, { partNo: "KMW05862408508", mrp: 25.50 },
-    { partNo: "KMW05863106406", mrp: 15.40 }, { partNo: "KMW05861106406", mrp: 21.50 },
-  ];
 
   return (
     <BotShell>
@@ -397,9 +393,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
             <div className="text-[15px] font-semibold text-[var(--ink-900)] mt-0.5">{part.description}</div>
           </div>
           <div className="flex items-center gap-2">
-            <button aria-label="Share" className="p-2 rounded-full border border-black/10 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-              <Share2 className="w-4 h-4 text-[var(--ink-700)]" />
-            </button>
             {outOfStock ? (
               <button
                 onClick={() => onCreateTicket?.(part)}
@@ -415,15 +408,7 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
           </div>
         </div>
 
-        {/* AI search tags */}
-        {part.searchTags && part.searchTags.length > 0 && (
-          <div className="mt-3 flex items-center gap-1.5 flex-wrap">
-            <span className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mr-1">AI tags</span>
-            {part.searchTags.map((t) => (
-              <span key={t} className="px-2 py-0.5 rounded-full bg-[var(--brand-50)] text-[var(--brand-700)] border border-[var(--brand-200)] text-[10px] font-medium">{t}</span>
-            ))}
-          </div>
-        )}
+        {/* AI tags removed per spec */}
 
         {/* Specs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 mt-4 text-xs">
@@ -512,21 +497,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
           </div>
         </div>
 
-        {/* Alternates */}
-        <div className="mt-4">
-          <div className="text-xs font-semibold text-[var(--ink-700)] mb-2">Alternate parts customers also ordered</div>
-          <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
-            {alternates.map((a, i) => (
-              <div key={a.partNo} className="shrink-0 w-40 rounded-xl border border-black/5 bg-white p-2 hover:border-[var(--brand-200)] transition">
-                <div className="aspect-square rounded-lg bg-[var(--surface-1)] border border-black/5 mb-1.5 overflow-hidden"><PartThumb seed={i + 3} /></div>
-                <div className="font-mono text-[11px] font-semibold text-[var(--brand-600)] truncate">{a.partNo}</div>
-                <div className="mt-0.5">
-                  <span className="text-[11px] text-[var(--ink-900)] font-semibold">${a.mrp.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Exploded modal */}
@@ -598,7 +568,7 @@ export function OrderHeaderCard({ orderId, placed, items, total }: {
   );
 }
 
-export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater, partNos }: {
+export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater }: {
   orderId: string; onCreateTicket: () => void; onCheckLater: () => void; partNos?: string[];
 }) {
   return (
@@ -609,29 +579,36 @@ export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater, partNos 
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[var(--ink-900)] text-sm flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> ETA not available yet
-            </div>
-            <p className="text-xs text-[var(--ink-500)] mt-1 leading-relaxed">
-              This usually happens when the shipment was just dispatched and the carrier hasn't synced tracking info for order <span className="font-mono text-[var(--brand-600)]">#{orderId}</span>.
-            </p>
-            {partNos && partNos.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {partNos.map((p) => (
-                  <span key={p} className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-700)]">{p}</span>
-                ))}
-              </div>
-            )}
-            <div className="text-[11px] text-[var(--ink-700)] mt-3 font-medium">Would you like me to escalate this to support?</div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <button onClick={onCreateTicket} className="bg-emerald-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Yes, create ticket
+            <div className="font-semibold text-[var(--ink-900)] text-sm">ETA not available</div>
+            <p className="text-xs text-[var(--ink-500)] mt-1">Order <span className="font-mono text-[var(--brand-600)]">#{orderId}</span> — would you like to raise a ticket for the same?</p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button onClick={onCreateTicket} className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                Yes
               </button>
-              <button onClick={onCheckLater} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-                <X className="w-3.5 h-3.5" /> No
+              <button onClick={onCheckLater} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-4 py-2 rounded-full hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
+                No
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function OrderConfirmCard({ orderId, placed, parts, onYes, onNo }: {
+  orderId: string; placed: string; parts: number; onYes: () => void; onNo: () => void;
+}) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Last Order</div>
+        <div className="font-mono font-bold text-[var(--brand-600)] text-base mt-0.5">#{orderId}</div>
+        <div className="text-xs text-[var(--ink-700)] mt-1">Placed on <strong>{placed}</strong> · <strong>{parts}</strong> parts</div>
+        <div className="text-[12px] text-[var(--ink-700)] mt-3 font-medium">Is this the order you are referring to?</div>
+        <div className="flex gap-2 mt-2">
+          <button onClick={onYes} className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-emerald-700">Yes</button>
+          <button onClick={onNo} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-4 py-2 rounded-full hover:bg-[var(--surface-2)]">No</button>
         </div>
       </div>
     </BotShell>
@@ -649,7 +626,7 @@ export function TrackingCardEx({ orderId, eta, carrier = "FedEx", status, partNo
     { label: "Out for Delivery", time: isInTransit ? "Pending" : "Today · 7:45 AM", state: isInTransit ? "pending" as const : "current" as const },
     { label: "Delivered", time: "Pending", state: "pending" as const },
   ];
-  const [notify, setNotify] = useState(false);
+  
   return (
     <BotShell>
       <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
@@ -691,14 +668,10 @@ export function TrackingCardEx({ orderId, eta, carrier = "FedEx", status, partNo
             );
           })}
         </ol>
-        <div className="mt-3 pt-3 border-t border-black/5 flex items-center justify-between gap-2 flex-wrap">
+        <div className="mt-3 pt-3 border-t border-black/5">
           <a className="text-xs text-[var(--brand-600)] font-medium inline-flex items-center gap-1 hover:underline" href="#">
             <MapPin className="w-3 h-3" /> Track on {carrier}
           </a>
-          <label className="text-xs text-[var(--ink-700)] inline-flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" checked={notify} onChange={(e) => { setNotify(e.target.checked); if (e.target.checked) toast.success("We'll notify you on delivery"); }} className="accent-[var(--brand-600)]" />
-            <Bell className="w-3 h-3" /> Notify me on delivery
-          </label>
         </div>
       </div>
     </BotShell>
