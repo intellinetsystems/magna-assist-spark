@@ -349,9 +349,11 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
           <div className="md:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
             <div className="flex items-center justify-between mb-1">
-              <div className="text-xs font-semibold text-[var(--ink-700)]">Assembly Illustration</div>
+              <div className="text-xs font-semibold text-[var(--ink-700)]">
+                {part.category === "Filters" ? "Product Image" : part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
+              </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setExploded(true)} aria-label="Exploded view" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
+                <button onClick={() => setExploded(true)} aria-label="Zoom" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
                   <ZoomIn className="w-3.5 h-3.5 text-[var(--ink-700)]" />
                 </button>
                 <button aria-label="Reset view" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
@@ -359,8 +361,14 @@ export function PartDetailCard({ part }: { part: PartItem }) {
                 </button>
               </div>
             </div>
-            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden">
-              <AssemblyDiagram highlightId={part.refNo} />
+            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
+              {part.category === "Filters" ? (
+                <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
+              ) : part.category === "Keys" ? (
+                <img src={keyImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
+              ) : (
+                <AssemblyDiagram highlightId={part.refNo} />
+              )}
               <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
                 #{part.refNo} — {part.partNo}
               </div>
