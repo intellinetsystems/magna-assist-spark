@@ -458,7 +458,7 @@ export function Assistant() {
       setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "ticket", ticketId: "EPC-61485" }), 800);
     }} />;
     if (m.type === "ticket") return <TicketCard key={m.id} ticketId={m.ticketId} />;
-    if (m.type === "tracking") return <TrackingCardEx key={m.id} orderId={m.orderId} eta={m.eta} />;
+    if (m.type === "tracking") return <TrackingCardEx key={m.id} orderId={m.orderId} eta={m.eta} carrier={m.carrier} status={m.status} partNos={m.partNos} />;
     if (m.type === "attachment-picker") return <AttachmentPickerCard key={m.id} onSubmit={onAttachmentPick} />;
     if (m.type === "model-picker") return <ModelPickerCard key={m.id} attachment={m.attachment} onSubmit={onModelPick} />;
     if (m.type === "variant-picker") return <VariantPickerCard key={m.id} model={m.model} onSubmit={onVariantPick} />;
@@ -467,7 +467,7 @@ export function Assistant() {
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
-    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={onCreateTicketEta} onCheckLater={onCheckLater} />;
+    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} partNos={m.partNos} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
     if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;
