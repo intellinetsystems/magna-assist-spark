@@ -397,9 +397,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
             <div className="text-[15px] font-semibold text-[var(--ink-900)] mt-0.5">{part.description}</div>
           </div>
           <div className="flex items-center gap-2">
-            <button aria-label="Share" className="p-2 rounded-full border border-black/10 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-              <Share2 className="w-4 h-4 text-[var(--ink-700)]" />
-            </button>
             {outOfStock ? (
               <button
                 onClick={() => onCreateTicket?.(part)}
