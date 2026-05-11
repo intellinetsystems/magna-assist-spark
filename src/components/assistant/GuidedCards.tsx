@@ -120,7 +120,7 @@ export function PartQueryCard({ model, variant, onSubmit }: { model: string; var
           {partCategories.map((c) => <Chip key={c} label={c} onClick={() => onSubmit(c)} />)}
         </div>
         <p className="text-[11px] text-[var(--ink-500)] mt-3 leading-relaxed">
-          Tip: paste a Part No. like <span className="font-mono text-[var(--brand-600)]">S0601D010111N</span>, or describe it like "front brake pad".
+          Tip: paste a Part No. like <span className="font-mono text-[var(--brand-600)]">KMW05863406506</span>, or describe it like "hydraulic adapter 90".
         </p>
       </div>
     </BotShell>
