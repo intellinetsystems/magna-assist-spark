@@ -459,13 +459,14 @@ export function Assistant() {
   );
 }
 
-function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, showMax, showMin }: {
+function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin }: {
   listening: boolean;
   quickOpen: boolean;
   setQuickOpen: (v: boolean) => void;
   onMaximize: () => void;
   onMinimize: () => void;
   onClose: () => void;
+  onNewChat: () => void;
   showMax?: boolean;
   showMin?: boolean;
 }) {
