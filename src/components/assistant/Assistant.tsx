@@ -456,21 +456,26 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
   showMin?: boolean;
 }) {
   return (
-    <div className="relative h-16 px-4 border-b border-black/5 flex items-center gap-3 bg-white/80 backdrop-blur">
-      <div className="w-9 h-9 rounded-xl bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
-        <Zap className="w-5 h-5 text-white" fill="currentColor" />
+    <div className="relative h-14 px-3 border-b border-black/5 flex items-center gap-2 bg-white/80 backdrop-blur">
+      <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
+        <Zap className="w-4 h-4 text-white" fill="currentColor" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-[15px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI Assistance</div>
-        <div className="text-[11px] text-[var(--ink-500)]">Virtual Assistant</div>
+        <div className="text-[13px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI</div>
+        <div className="text-[10px] text-[var(--ink-500)] leading-tight flex items-center gap-1">
+          <span className={`w-1.5 h-1.5 rounded-full ${listening ? "bg-emerald-500 animate-pulse" : "bg-emerald-400"}`} />
+          {listening ? "Listening…" : "Online"}
+        </div>
       </div>
-      <Waveform active={listening} listening={listening} className="hidden sm:flex" />
+      {listening && <Waveform active listening className="hidden md:flex" />}
       <div className="relative">
         <button
           onClick={() => setQuickOpen(!quickOpen)}
-          className="text-xs font-medium text-[var(--ink-700)] hover:text-[var(--brand-600)] inline-flex items-center gap-1 px-2 py-1.5 rounded-lg hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
+          aria-label="Quick Actions"
+          title="Quick Actions"
+          className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
         >
-          <RefreshCw className="w-3.5 h-3.5" /> Quick Actions
+          <RefreshCw className="w-4 h-4" />
         </button>
         <AnimatePresence>
           {quickOpen && (
@@ -480,6 +485,7 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
               exit={{ opacity: 0, scale: 0.96, y: -4 }}
               className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-soft-lg border border-black/5 p-2 z-10"
             >
+              <div className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Quick Actions</div>
               {quickActions.map((q) => {
                 const Icon = qaIcons[q.icon];
                 return (
@@ -493,24 +499,24 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
         </AnimatePresence>
       </div>
       {/* Window controls */}
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-0.5 pl-1 ml-1 border-l border-black/5">
         {showMax && (
-          <button onClick={onMaximize} aria-label="Maximize" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
-            <Maximize2 className="w-4 h-4" />
+          <button onClick={onMaximize} aria-label="Maximize" title="Maximize" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
+            <Maximize2 className="w-3.5 h-3.5" />
           </button>
         )}
         {showMin && (
-          <button onClick={onMaximize} aria-label="Restore down" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
-            <Minimize2 className="w-4 h-4" />
+          <button onClick={onMaximize} aria-label="Restore down" title="Restore" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
+            <Minimize2 className="w-3.5 h-3.5" />
           </button>
         )}
         {showMax && (
-          <button onClick={onMinimize} aria-label="Minimize to launcher" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
-            <ChevronDown className="w-4 h-4" />
+          <button onClick={onMinimize} aria-label="Minimize to launcher" title="Minimize" className="p-1.5 rounded-lg hover:bg-[var(--surface-2)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
+            <ChevronDown className="w-3.5 h-3.5" />
           </button>
         )}
-        <button onClick={onClose} aria-label="Close" className="p-1.5 rounded-lg hover:bg-[var(--brand-50)] hover:text-[var(--brand-600)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
-          <X className="w-4 h-4" />
+        <button onClick={onClose} aria-label="Close" title="Close" className="p-1.5 rounded-lg hover:bg-[var(--brand-50)] hover:text-[var(--brand-600)] text-[var(--ink-500)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]">
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
