@@ -301,10 +301,14 @@ export function Assistant() {
   function handleSuggestion(s: string) {
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
+      "Order Part": "part-search",
       "Browse Quick Reference": "quick-reference",
       "Track my last order": "track-eta",
+      "Check Availability": "quick-reference",
+      "Find Alternate Part": "part-search",
       "Report an order issue": "wrong-part",
       "Create a service ticket": "create-ticket",
+      "Create Ticket": "create-ticket",
     };
     const flow = map[s] ?? "create-ticket";
     const trigger = flowTriggers.find((t) => t.flow === flow);
