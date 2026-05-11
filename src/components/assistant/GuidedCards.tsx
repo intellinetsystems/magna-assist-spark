@@ -468,11 +468,13 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
                 <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
               ) : part.category === "Keys" ? (
                 <img src={keyImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
+              ) : isDrawbar ? (
+                <img src={drawbarFig} alt="Swinging Drawbar Attachment illustration (00 Series, 4500 2WD)" loading="lazy" className="w-full h-full object-contain p-2 select-none" draggable={false} />
               ) : (
                 <AssemblyDiagram highlightId={part.refNo} />
               )}
               {!part.isQuickRef && (
-                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
+                <div className={`absolute bottom-2 left-2 px-2 py-1 rounded-full ${pillColor} text-white text-[10px] font-mono font-semibold shadow-soft`}>
                   #{part.refNo} — {part.partNo}
                 </div>
               )}
