@@ -961,67 +961,72 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
   onStartCall: () => void;
   inCall: boolean;
 }) {
+  // ChatGPT-style composer: text input is always visible; call/mute live inside the bar.
+  void textMode; void setTextMode;
   return (
-    <div className="border-t border-black/5 bg-white/90 backdrop-blur p-4">
-      {textMode && (
-        <form
-          onSubmit={(e) => { e.preventDefault(); onSend(); }}
-          className="mb-3 flex items-center gap-2 bg-[var(--surface-1)] border border-black/5 rounded-2xl px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--brand-200)]"
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Message Mahindra AI Assistant…"
-            aria-label="Type a message"
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--ink-500)]"
-          />
-          <button type="submit" aria-label="Send" className="w-8 h-8 rounded-full bg-gradient-brand text-white flex items-center justify-center hover:opacity-95 shadow-soft">
-            <Send className="w-4 h-4" />
-          </button>
-        </form>
-      )}
-      <div className="flex items-center justify-center gap-4">
+    <div className="border-t border-black/5 bg-white/90 backdrop-blur p-3">
+      <form
+        onSubmit={(e) => { e.preventDefault(); onSend(); }}
+        className="flex items-end gap-2 bg-[var(--surface-1)] border border-black/10 rounded-3xl px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--brand-200)]"
+      >
+        {/* Mic — toggles mute when in a call; otherwise starts a call */}
         <button
-          onClick={toggleMic}
-          disabled={!inCall}
-          aria-label={listening ? "Mute microphone" : "Unmute microphone"}
-          className={`w-11 h-11 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2 ${
-            !inCall
-              ? "bg-white border-black/10 text-[var(--ink-500)] opacity-50 cursor-not-allowed"
-              : listening
-              ? "bg-[var(--brand-50)] border-[var(--brand-500)] text-[var(--brand-600)] ring-4 ring-[var(--brand-200)]/40 animate-pulse"
-              : "bg-white border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-2)]"
+          type="button"
+          onClick={() => { if (inCall) toggleMic(); else onStartCall(); }}
+          aria-label={inCall ? (listening ? "Mute microphone" : "Unmute microphone") : "Start voice input"}
+          title={inCall ? (listening ? "Mute" : "Unmute") : "Voice input"}
+          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition ${
+            inCall && listening
+              ? "bg-[var(--brand-600)] text-white ring-4 ring-[var(--brand-200)]/40 animate-pulse"
+              : "bg-white border border-black/10 text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
           }`}
         >
-          {listening && inCall ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
+          {inCall && !listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
         </button>
+
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSend(); } }}
+          placeholder="Message MAgNA AI…"
+          rows={1}
+          aria-label="Type a message"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--ink-500)] resize-none max-h-32 py-1.5"
+        />
+
+        {/* Call / hang-up */}
         {inCall ? (
           <button
+            type="button"
             onClick={onEnd}
             aria-label="Hang up call"
-            className="w-14 h-14 rounded-full bg-gradient-brand text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
+            title="Hang up"
+            className="w-9 h-9 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center shrink-0"
           >
-            <PhoneOff className="w-6 h-6" />
+            <PhoneOff className="w-4 h-4" />
           </button>
         ) : (
           <button
+            type="button"
             onClick={onStartCall}
             aria-label="Call MAgNA AI"
-            className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+            title="Voice call"
+            className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shrink-0"
           >
-            <Phone className="w-6 h-6" />
+            <Phone className="w-4 h-4" />
           </button>
         )}
+
+        {/* Send */}
         <button
-          onClick={() => setTextMode(!textMode)}
-          aria-label="Toggle text input"
-          className={`w-11 h-11 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2 ${
-            textMode ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-2)]"
-          }`}
+          type="submit"
+          aria-label="Send"
+          disabled={!input.trim()}
+          className="w-9 h-9 rounded-full bg-gradient-brand text-white flex items-center justify-center hover:opacity-95 shadow-soft shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          <MessageSquare className="w-5 h-5" />
+          <Send className="w-4 h-4" />
         </button>
-      </div>
+      </form>
       <p className="text-center text-[10px] text-[var(--ink-500)] mt-2">
         MAgNA AI may make mistakes — verify critical info.
       </p>
