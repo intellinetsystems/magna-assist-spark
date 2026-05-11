@@ -623,6 +623,7 @@ export function Assistant() {
                 onClose={endSession}
                 onNewChat={newChat}
                 showMax
+                onQuickAction={handleSuggestion}
               />
               <Thread
                 messages={messages}
