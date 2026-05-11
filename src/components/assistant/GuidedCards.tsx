@@ -331,13 +331,14 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         {/* Specs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 mt-4 text-xs">
           {[
+            ["Ref No.", `#${part.refNo}`], ["Qty", `${part.qty}`], ["Figure", part.figure],
             ["Category", part.category], ["Vehicle", part.vehicle], ["Model", part.model],
             ["Variant", part.variant], ["Aggregate", part.aggregate], ["Group No.", part.groupNo],
             ["Assembly", part.assembly], ["Cost (USD)", `$ ${part.cost.toFixed(2)}`], ["MRP (USD)", `$ ${part.mrp.toFixed(2)}`],
           ].map(([k, v]) => (
-            <div key={k}>
+            <div key={k} className="min-w-0">
               <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)]">{k}</div>
-              <div className="text-[var(--ink-900)] font-medium">{v}</div>
+              <div className="text-[var(--ink-900)] font-medium break-words">{v}</div>
             </div>
           ))}
         </div>
