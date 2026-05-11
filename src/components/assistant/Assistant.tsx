@@ -28,13 +28,24 @@ const qaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   Package, Replace, Ticket, CheckCircle,
 };
 
-const historyMock = [
-  "Order Detail Analysis from 1-Jan-2023 to 16-Jun-2025 of 'Auto Motors Co. HCV'",
-  "Top 5 Selling Parts",
-  "Compare Cost Of Quarter 1 & Quarter 2, 2024",
-];
+type ChatHistoryItem = { id: string; title: string; messages: ChatMessage[]; updated: number };
 
 const STORAGE_KEY = "magna_ai_session";
+const HISTORY_KEY = "magna_ai_history";
+const SETTINGS_KEY = "magna_ai_settings";
+
+type Settings = {
+  voice: "female-en" | "male-en" | "female-hi";
+  language: "en-US" | "en-IN" | "hi-IN";
+  notifications: boolean;
+  autoListen: boolean;
+  responseStyle: "concise" | "detailed";
+  theme: "light" | "system";
+};
+const defaultSettings: Settings = {
+  voice: "female-en", language: "en-US", notifications: true,
+  autoListen: false, responseStyle: "concise", theme: "light",
+};
 
 // Strip non-serializable / interactive prompts before persisting
 function persistable(messages: ChatMessage[]): ChatMessage[] {
