@@ -306,3 +306,33 @@ export function buildCreateTicketFromEta(): FlowStep[] {
     { delay: 200, message: { id: uid(), role: "bot", type: "priority" } },
   ];
 }
+
+// FLOW 7 — last order, no ETA, escalate → SUP-45821
+export function buildLastOrderNoEta(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Sure — let me check your last order…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Your last order was placed on **May 2, 2026**.\n\n**Ordered Parts:**\n• KMW05863108408 — HYDRAULIC Adapter, 90°\n• E007900403C11 — ASSLY PLATE DRAWBAR SUPPORT RH\n\nThe order has not been dispatched yet, so ETA is not available currently." } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "1004221", ticketId: "SUP-45821", partNos: ["KMW05863108408", "E007900403C11"] } },
+  ];
+}
+
+// FLOW 8 — Order #1111 dispatched, BlueDart, ETA 15 May 2026
+export function buildOrder1111(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Looking up order **#1111**…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Order **#1111** has been dispatched.\n\n**Estimated Delivery Date:** May 15, 2026\n**Current Status:** In Transit\n**Courier Partner:** BlueDart" } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "tracking", orderId: "1111", eta: "15 May 2026", carrier: "BlueDart", status: "In Transit", partNos: ["KMW05863108408", "E007900403C11"] } },
+  ];
+}
+
+// FLOW 9 — Order #7777 not dispatched, offer ticket
+export function buildOrder7777(): FlowStep[] {
+  return [
+    { delay: 500, message: { id: uid(), role: "bot", type: "text", text: "Checking order **#7777**…" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "typing" } },
+    { delay: 900, message: { id: uid(), role: "bot", type: "text", text: "Order **#7777** is currently under processing and has not been dispatched yet.\n\nETA is not available currently." } },
+    { delay: 250, message: { id: uid(), role: "bot", type: "eta-pending", orderId: "7777", ticketId: "SUP-45822" } },
+  ];
+}
