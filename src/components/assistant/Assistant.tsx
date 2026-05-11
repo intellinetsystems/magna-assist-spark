@@ -558,7 +558,15 @@ export function Assistant() {
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
-    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} partNos={m.partNos} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
+    if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={() => onCreateTicketEta(m.ticketId)} onCheckLater={onCheckLater} />;
+    if (m.type === "order-confirm") return <OrderConfirmCard key={m.id} orderId={m.orderId} placed={m.placed} parts={m.parts} onYes={() => {
+      pushMessage({ id: newId(), role: "user", type: "text", text: "Yes" });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `Order **#${m.orderId}** has not been dispatched yet, so ETA is not available currently.` }), 350);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "eta-pending", orderId: m.orderId, ticketId: m.ticketId }), 800);
+    }} onNo={() => {
+      pushMessage({ id: newId(), role: "user", type: "text", text: "No" });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "No problem — please share the order number you'd like to check." }), 400);
+    }} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
     if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;
