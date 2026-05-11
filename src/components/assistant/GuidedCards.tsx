@@ -371,8 +371,8 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         </div>
 
         {/* Assembly + Attachments */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
-          <div className="md:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
+        <div className="grid grid-cols-1 @[520px]:grid-cols-5 gap-3 mt-4">
+          <div className="@[520px]:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs font-semibold text-[var(--ink-700)]">
                 {part.category === "Filters" ? "Product Image" : part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
