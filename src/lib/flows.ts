@@ -162,6 +162,16 @@ const backhoeValveParts: PartItem[] = [
   { partNo: "KMW05442009", description: "LOCKWASHER 5/16 (Note 2)", category: "Hardware", vehicle: "Backhoe", model: "1526 Backhoe", variant: "1526B", aggregate: "Backhoe", groupNo: "G-008", assembly: "Backhoe Valve, Fittings & Hardware", figure: "1526B - FIG 008", refNo: 10, qty: 2, cost: 0.35, mrp: 0.95, inStock: 880 },
 ];
 
+// SWINGING DRAWBAR ATTACHMENT — 00 Series, Variant 4500 2WD (uploaded illustration)
+const drawbarParts: PartItem[] = [
+  { partNo: "E007900403C12", description: "ASSLY PLATE DRAWBAR SUPPORT LH", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 2, qty: 1, cost: 32.50, mrp: 48.95, inStock: 14 },
+  { partNo: "E007900403C11", description: "ASSLY PLATE DRAWBAR SUPPORT RH", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 4, qty: 1, cost: 32.50, mrp: 48.95, inStock: 11, highlight: "purple" },
+  { partNo: "E0079DBR005", description: "DRAWBAR PIN", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 5, qty: 1, cost: 9.10, mrp: 14.20, inStock: 38 },
+  { partNo: "E0079DBR009A", description: "DRAWBAR LOCK CLIP (Pair)", category: "Implements", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 9, qty: 2, cost: 6.20, mrp: 9.95, inStock: 60 },
+  { partNo: "E0079DBR012", description: "HEX BOLT M12 x 60", category: "Hardware", vehicle: "Tractor", model: "4500 2WD", variant: "4500 2WD", aggregate: "Drawbar", groupNo: "G-DBR", assembly: "Swinging Drawbar Attachment", figure: "4500-2WD - DRAWBAR", refNo: 12, qty: 4, cost: 0.85, mrp: 1.65, inStock: 420 },
+];
+
+const allCatalogParts: PartItem[] = [...backhoeValveParts, ...drawbarParts];
 const sampleParts: PartItem[] = backhoeValveParts;
 
 // Generic Quick Reference item builder. One demo SKU per category is intentionally
