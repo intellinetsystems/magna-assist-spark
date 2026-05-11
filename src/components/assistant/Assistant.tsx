@@ -15,7 +15,7 @@ import {
 } from "./MessageBubbles";
 import {
   AttachmentPickerCard, ModelPickerCard, VariantPickerCard, AssemblyPickerCard, PartQueryCard, ResultListCard,
-  PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
+  PartDetailCard, OrderHeaderCard, EtaPendingCard, OrderConfirmCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
 } from "./GuidedCards";
