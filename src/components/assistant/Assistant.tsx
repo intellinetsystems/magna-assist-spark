@@ -67,11 +67,15 @@ export function Assistant() {
   const [unread, setUnread] = useState(false);
   const [etaAvailable, setEtaAvailable] = useState(true);
   const [confirmClose, setConfirmClose] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<Settings>(defaultSettings);
   const timersRef = useRef<number[]>([]);
   // Pending state for the multi-step part flow
   const partFlowRef = useRef<{ attachment?: string; model?: string; variant?: string; figure?: string; query?: string }>({});
 
-  // Load persisted session
+  // Load persisted session + history + settings
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -79,8 +83,17 @@ export function Assistant() {
         const parsed = JSON.parse(raw) as ChatMessage[];
         if (Array.isArray(parsed)) setMessages(parsed);
       }
+      const hRaw = localStorage.getItem(HISTORY_KEY);
+      if (hRaw) {
+        const parsed = JSON.parse(hRaw) as ChatHistoryItem[];
+        if (Array.isArray(parsed)) setChatHistory(parsed);
+      }
+      const sRaw = localStorage.getItem(SETTINGS_KEY);
+      if (sRaw) setSettings({ ...defaultSettings, ...JSON.parse(sRaw) });
     } catch { /* ignore */ }
   }, []);
+  useEffect(() => { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory)); } catch { /* ignore */ } }, [chatHistory]);
+  useEffect(() => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* ignore */ } }, [settings]);
 
   // Persist
   useEffect(() => {
