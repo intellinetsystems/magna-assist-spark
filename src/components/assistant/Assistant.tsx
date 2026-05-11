@@ -284,9 +284,7 @@ export function Assistant() {
               <Zap className="w-7 h-7" strokeWidth={2.2} fill="currentColor" />
             </div>
             {unread && (
-              <span className="absolute top-1.5 right-1.5 w-3 h-3 rounded-full bg-white shadow-soft flex items-center justify-center">
-                <span className="w-2 h-2 rounded-full bg-[var(--brand-600)] animate-pulse" />
-              </span>
+              <span className="absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
             )}
           </motion.button>
         )}
