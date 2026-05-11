@@ -8,13 +8,13 @@ import {
 import { Waveform } from "./Waveform";
 import {
   ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, type PartItem,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, partsByFigure, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
 } from "./MessageBubbles";
 import {
-  ModelPickerCard, VariantPickerCard, PartQueryCard, ResultListCard,
+  AttachmentPickerCard, ModelPickerCard, VariantPickerCard, AssemblyPickerCard, PartQueryCard, ResultListCard,
   PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
 } from "./GuidedCards";
