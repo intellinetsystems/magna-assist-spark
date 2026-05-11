@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, MessageSquare, Send,
+  Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
   Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
 } from "lucide-react";
@@ -50,6 +50,7 @@ export function Assistant() {
   const [textMode, setTextMode] = useState(false);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
+  const [inCall, setInCall] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const [transcriptOpen, setTranscriptOpen] = useState(true);
   const [unread, setUnread] = useState(false);
