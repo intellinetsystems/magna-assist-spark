@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
