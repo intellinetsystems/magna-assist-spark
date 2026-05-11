@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
-  Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp,
+  Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
@@ -325,6 +325,7 @@ export function Assistant() {
                 onMaximize={() => setMode("full")}
                 onMinimize={() => setMode("closed")}
                 onClose={endSession}
+                onNewChat={newChat}
                 showMax
               />
               <Thread
@@ -410,6 +411,7 @@ export function Assistant() {
                 onMaximize={() => setMode("panel")}
                 onMinimize={() => setMode("panel")}
                 onClose={() => setConfirmClose(true)}
+                onNewChat={newChat}
                 showMin
               />
               <Thread
@@ -459,13 +461,14 @@ export function Assistant() {
   );
 }
 
-function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, showMax, showMin }: {
+function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin }: {
   listening: boolean;
   quickOpen: boolean;
   setQuickOpen: (v: boolean) => void;
   onMaximize: () => void;
   onMinimize: () => void;
   onClose: () => void;
+  onNewChat: () => void;
   showMax?: boolean;
   showMin?: boolean;
 }) {
@@ -482,6 +485,14 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
         </div>
       </div>
       {listening && <Waveform active listening className="hidden md:flex" />}
+      <button
+        onClick={onNewChat}
+        aria-label="Start new chat"
+        title="Start new chat"
+        className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
+      >
+        <MessageSquarePlus className="w-4 h-4" />
+      </button>
       <div className="relative">
         <button
           onClick={() => setQuickOpen(!quickOpen)}
