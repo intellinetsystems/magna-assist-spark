@@ -578,6 +578,10 @@ export function Assistant() {
     if (m.type === "quick-ref-series") return <QuickRefSeriesCard key={m.id} category={m.category} onPick={onQuickRefSeries} />;
     if (m.type === "quick-ref-submodel") return <QuickRefSubmodelCard key={m.id} category={m.category} series={m.series} onPick={onQuickRefSubmodel} />;
     if (m.type === "quick-ref-list") return <QuickRefListCard key={m.id} category={m.category} series={m.series} submodel={m.submodel} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "find-series") return <FindSeriesCard key={m.id} onPick={onFindSeries} />;
+    if (m.type === "find-model") return <FindModelCard key={m.id} series={m.series} onPick={onFindModel} />;
+    if (m.type === "find-aggregate") return <FindAggregateCard key={m.id} series={m.series} model={m.model} onPick={onFindAggregate} />;
+    if (m.type === "find-assembly") return <FindAssemblyCard key={m.id} series={m.series} model={m.model} aggregate={m.aggregate} onPick={onFindAssembly} />;
     if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
     return null;
   };
