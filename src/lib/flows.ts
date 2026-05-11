@@ -24,8 +24,10 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "tracking"; orderId: string; eta: string }
   | { id: string; role: "bot"; type: "order-header"; orderId: string; placed: string; items: number; total: string }
   | { id: string; role: "bot"; type: "eta-pending"; orderId: string }
-  | { id: string; role: "bot"; type: "model-picker" }
-  | { id: string; role: "bot"; type: "variant-picker"; model: string }
+  | { id: string; role: "bot"; type: "attachment-picker" }
+  | { id: string; role: "bot"; type: "model-picker"; attachment: string }
+  | { id: string; role: "bot"; type: "variant-picker"; attachment: string; model: string }
+  | { id: string; role: "bot"; type: "assembly-picker"; attachment: string; model: string; variant: string }
   | { id: string; role: "bot"; type: "part-query"; model: string; variant: string }
   | { id: string; role: "bot"; type: "result-list"; query: string; model: string; variant: string; items: PartItem[] }
   | { id: string; role: "bot"; type: "part-detail"; part: PartItem }
