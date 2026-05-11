@@ -401,14 +401,9 @@ export function Assistant() {
     }, 250);
   }, []);
 
-  const onCreateTicketEta = useCallback((ticketId?: string) => {
+  const onCreateTicketEta = useCallback((_ticketId?: string) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: "Yes, create a ticket" });
-    if (ticketId) {
-      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Your support ticket has been created successfully." }), 500);
-      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "ticket", ticketId }), 1000);
-    } else {
-      setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
-    }
+    setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
   }, []);
 
   const onCheckLater = useCallback(() => {
