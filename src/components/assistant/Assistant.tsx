@@ -8,7 +8,7 @@ import {
 import { Waveform } from "./Waveform";
 import {
   ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, partsByFigure, type PartItem,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
@@ -17,6 +17,7 @@ import {
   AttachmentPickerCard, ModelPickerCard, VariantPickerCard, AssemblyPickerCard, PartQueryCard, ResultListCard,
   PartDetailCard, OrderHeaderCard, EtaPendingCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
+  QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
@@ -193,7 +194,7 @@ export function Assistant() {
   function handleSuggestion(s: string) {
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
-      "Find a filter or key": "accessory-search",
+      "Browse Quick Reference": "quick-reference",
       "Track my last order": "track-eta",
       "Report an order issue": "wrong-part",
       "Create a service ticket": "create-ticket",
@@ -307,6 +308,57 @@ export function Assistant() {
     }, 250);
   }, []);
 
+  // Quick Reference handlers
+  const qrRef = useRef<{ category?: string; series?: string; submodel?: string }>({});
+  const onQuickRefPick = useCallback((category: string) => {
+    qrRef.current = { category };
+    pushMessage({ id: newId(), role: "user", type: "text", text: category });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${category}** — choose a Series:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-series", category }), 300);
+    }, 250);
+  }, []);
+  const onQuickRefSeries = useCallback((series: string) => {
+    const category = qrRef.current.category ?? "Quick Reference";
+    qrRef.current.series = series;
+    pushMessage({ id: newId(), role: "user", type: "text", text: series });
+    const hasSubmodels = !!quickRefSubmodels[series]?.length;
+    setTimeout(() => {
+      if (hasSubmodels) {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `**${category} → ${series}** — pick a sub-model:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-submodel", category, series }), 300);
+      } else {
+        const items = buildQuickRefItems(category, series);
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the items in **${category} → ${series}**:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category, series, items }), 300);
+      }
+    }, 250);
+  }, []);
+  const onQuickRefSubmodel = useCallback((submodel: string) => {
+    const { category = "Quick Reference", series = "" } = qrRef.current;
+    qrRef.current.submodel = submodel;
+    pushMessage({ id: newId(), role: "user", type: "text", text: submodel });
+    setTimeout(() => {
+      const items = buildQuickRefItems(category, series, submodel);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Items in **${category} → ${series} → ${submodel}**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category, series, submodel, items }), 300);
+    }, 250);
+  }, []);
+
+  // Out-of-stock → ticket
+  const onPartCreateTicket = useCallback((p: PartItem) => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: `Create a ticket — ${p.partNo} is out of stock` });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${p.partNo}** (${p.description}) is out of stock. I've logged this as a **High Priority** restock request. Please confirm or change priority:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "priority" }), 300);
+    }, 250);
+  }, []);
+  const onNoResultsTicket = useCallback(() => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: "Yes, raise a ticket" });
+    setTimeout(() => runFlow("create-ticket"), 200);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function newChat() {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
@@ -338,11 +390,16 @@ export function Assistant() {
     if (m.type === "assembly-picker") return <AssemblyPickerCard key={m.id} model={m.model} variant={m.variant} onSubmit={onAssemblyPick} />;
     if (m.type === "part-query") return <PartQueryCard key={m.id} model={m.model} variant={m.variant} onSubmit={onPartQuery} />;
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
-    if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} />;
+    if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
     if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={onCreateTicketEta} onCheckLater={onCheckLater} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;
+    if (m.type === "quick-ref-series") return <QuickRefSeriesCard key={m.id} category={m.category} onPick={onQuickRefSeries} />;
+    if (m.type === "quick-ref-submodel") return <QuickRefSubmodelCard key={m.id} category={m.category} series={m.series} onPick={onQuickRefSubmodel} />;
+    if (m.type === "quick-ref-list") return <QuickRefListCard key={m.id} category={m.category} series={m.series} submodel={m.submodel} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
     return null;
   };
 

@@ -6,7 +6,7 @@ import {
   Download, CheckCircle2, Share2, Plus, ArrowRight, X, ZoomIn,
 } from "lucide-react";
 import { BotShell } from "./MessageBubbles";
-import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, attachmentCategories, modelsByAttachment, assembliesByVariant, defaultAssemblies, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
+import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, attachmentCategories, modelsByAttachment, assembliesByVariant, defaultAssemblies, quickRefCategories, quickRefSubmodels, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
 import { toast } from "sonner";
 import filterImg from "@/assets/accessory-filter.jpg";
 import keyImg from "@/assets/accessory-key.jpg";
@@ -356,7 +356,8 @@ function _LegacyAssemblyDiagramSVG({ highlightId = 9 }: { highlightId?: number }
   );
 }
 
-export function PartDetailCard({ part }: { part: PartItem }) {
+export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCreateTicket?: (part: PartItem) => void }) {
+  const outOfStock = part.inStock <= 0;
   const [exploded, setExploded] = useState(false);
   const [video, setVideo] = useState(false);
   const attachments = [
@@ -380,9 +381,15 @@ export function PartDetailCard({ part }: { part: PartItem }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-mono text-lg font-bold text-[var(--brand-600)]">{part.partNo}</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium inline-flex items-center gap-1">
-                <CheckCircle2 className="w-3 h-3" /> In Stock — {part.inStock} units
-              </span>
+              {outOfStock ? (
+                <span className="px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 text-[11px] font-medium inline-flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" /> Out of Stock
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-medium inline-flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> In Stock — {part.inStock} units
+                </span>
+              )}
             </div>
             <div className="text-[15px] font-semibold text-[var(--ink-900)] mt-0.5">{part.description}</div>
           </div>
@@ -390,9 +397,18 @@ export function PartDetailCard({ part }: { part: PartItem }) {
             <button aria-label="Share" className="p-2 rounded-full border border-black/10 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
               <Share2 className="w-4 h-4 text-[var(--ink-700)]" />
             </button>
-            <button onClick={() => toast.success("Added to order")} className="bg-gradient-brand text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-              <Plus className="w-4 h-4" /> Add to Order
-            </button>
+            {outOfStock ? (
+              <button
+                onClick={() => onCreateTicket?.(part)}
+                className="bg-rose-600 text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+              >
+                <TicketIcon className="w-4 h-4" /> Create Ticket
+              </button>
+            ) : (
+              <button onClick={() => toast.success("Added to order")} className="bg-gradient-brand text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
+                <Plus className="w-4 h-4" /> Add to Order
+              </button>
+            )}
           </div>
         </div>
 
@@ -742,6 +758,145 @@ export function AccessoryListCard({
               <ChevronRight className="w-4 h-4 text-[var(--ink-500)] shrink-0" />
             </button>
           ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+// ---------- Quick Reference (top-level catalogue browsing) ----------
+export function QuickRefPickerCard({ onPick }: { onPick: (category: string) => void }) {
+  const [search, setSearch] = useState("");
+  const list = quickRefCategories.filter((c) => c.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">Quick Reference — Category</div>
+        <div className="flex items-center gap-1.5 bg-[var(--surface-1)] border border-black/5 rounded-full px-3 py-1.5 mb-2">
+          <Search className="w-3.5 h-3.5 text-[var(--ink-500)]" />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search categories…" className="bg-transparent text-xs outline-none flex-1" />
+        </div>
+        <div className="grid grid-cols-1 gap-1 max-h-72 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((c) => (
+            <button
+              key={c}
+              onClick={() => onPick(c)}
+              className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate font-medium">{c}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function QuickRefSeriesCard({ category, onPick }: { category: string; onPick: (series: string) => void }) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">{category}</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Choose a Series</div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {accessorySeries.map((s) => (
+            <button
+              key={s}
+              onClick={() => onPick(s)}
+              className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate">{s}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function QuickRefSubmodelCard({ category, series, onPick }: { category: string; series: string; onPick: (submodel: string) => void }) {
+  const list = quickRefSubmodels[series] ?? [];
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">{category} → {series}</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Choose a sub-model</div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((m) => (
+            <button
+              key={m}
+              onClick={() => onPick(m)}
+              className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate font-medium">{m}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function QuickRefListCard({ category, series, submodel, items, onSelect }: {
+  category: string; series: string; submodel?: string; items: PartItem[]; onSelect: (p: PartItem) => void;
+}) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-2xl">
+        <div className="text-sm text-[var(--ink-700)] mb-3">
+          {category} → <strong className="text-[var(--ink-900)]">{series}{submodel ? ` → ${submodel}` : ""}</strong> · {items.length} items
+        </div>
+        <div className="space-y-2">
+          {items.map((p) => (
+            <button
+              key={p.partNo}
+              onClick={() => onSelect(p)}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl border border-black/5 hover:bg-[var(--brand-50)]/40 hover:border-[var(--brand-200)] hover:shadow-soft transition text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[var(--surface-1)] border border-black/5 shrink-0 flex items-center justify-center text-[10px] text-[var(--ink-500)] font-mono">
+                #{p.refNo}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-[13px] font-semibold text-[var(--brand-600)] truncate">{p.partNo}</div>
+                <div className="text-sm text-[var(--ink-900)] mt-0.5 truncate">{p.description}</div>
+                <div className="text-[11px] mt-0.5 truncate">
+                  {p.inStock <= 0 ? <span className="text-rose-600 font-medium">Out of stock</span> : <span className="text-emerald-700">In stock — {p.inStock}</span>}
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-[10px] text-[var(--ink-500)] uppercase">MRP</div>
+                <div className="text-sm font-semibold text-[var(--ink-900)]">${p.mrp.toFixed(2)}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function NoResultsCard({ query, onCreateTicket }: { query: string; onCreateTicket: () => void }) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-rose-200 rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-full bg-rose-50 flex items-center justify-center shrink-0">
+            <AlertTriangle className="w-4 h-4 text-rose-600" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-semibold text-[var(--ink-900)]">No matches for "{query}"</div>
+            <div className="text-xs text-[var(--ink-500)] mt-1">I couldn't find this part in the catalogue. Want me to raise a ticket so the parts team can confirm availability or suggest an alternate?</div>
+            <button
+              onClick={onCreateTicket}
+              className="mt-3 bg-rose-600 text-white text-xs font-semibold rounded-full px-3 py-1.5 inline-flex items-center gap-1.5 shadow-soft hover:bg-rose-700"
+            >
+              <TicketIcon className="w-3.5 h-3.5" /> Create Ticket
+            </button>
+          </div>
         </div>
       </div>
     </BotShell>

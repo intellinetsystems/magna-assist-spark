@@ -32,7 +32,12 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "result-list"; query: string; model: string; variant: string; items: PartItem[] }
   | { id: string; role: "bot"; type: "part-detail"; part: PartItem }
   | { id: string; role: "bot"; type: "accessory-picker"; kind: "Filter" | "Key" }
-  | { id: string; role: "bot"; type: "accessory-list"; kind: "Filter" | "Key"; series: string; items: PartItem[] };
+  | { id: string; role: "bot"; type: "accessory-list"; kind: "Filter" | "Key"; series: string; items: PartItem[] }
+  | { id: string; role: "bot"; type: "quick-ref-picker" }
+  | { id: string; role: "bot"; type: "quick-ref-series"; category: string }
+  | { id: string; role: "bot"; type: "quick-ref-submodel"; category: string; series: string }
+  | { id: string; role: "bot"; type: "quick-ref-list"; category: string; series: string; submodel?: string; items: PartItem[] }
+  | { id: string; role: "bot"; type: "no-results"; query: string };
 
 export type FlowStep = { delay?: number; message: ChatMessage };
 
@@ -41,7 +46,7 @@ export const newId = uid;
 
 export const suggestions = [
   "Find a part",
-  "Find a filter or key",
+  "Browse Quick Reference",
   "Track my last order",
   "Create a service ticket",
 ];
@@ -106,11 +111,35 @@ export const defaultAssemblies: { figure: string; label: string }[] = [
   { figure: "1526B - FIG 008", label: "Backhoe Valve, Fittings & Hardware (FIG 008)" },
 ];
 
-// --- Accessories (Filters / Keys) hierarchy by Series ---
+// --- Quick Reference: full top-level catalogue (mirrors the QUICK REFERENCE panel) ---
+export const quickRefCategories = [
+  "3RD FUNCTION KIT", "AUXILIARY VALVE KIT", "BATTERY CHARGERS & JUMP STARTERS",
+  "BATTERY SERVICE PRODUCTS", "BLOCK HEATER", "CABIN", "CAMERAS", "ELECTRICALS",
+  "ENGINE", "FILTER LIST", "GLOPOWER COLOR RESTORER", "HITCH PARTS",
+  "HITCH PARTS DISPLAY", "HYDRAULICS", "KEY LIST", "MAINTENANCE ITEMS",
+  "MANUAL LIST", "LUBRICANTS",
+];
+
+// Series shared by Quick Reference categories.
 export const accessorySeries = [
   "00 Series", "05 Series", "05 Series Old Tractors", "10 Series", "15 Series",
   "1500 Series", "16 Series", "1600 Series", "20 Series", "25 Series", "2500 Series",
 ];
+
+// Sub-models (e.g. "10 Series → 4010 GEAR / 4010 HST / 5010 GEAR 4WD …")
+export const quickRefSubmodels: Record<string, string[]> = {
+  "10 Series": ["4010 GEAR", "4010 HST", "5010 GEAR 4WD", "5010 GEAR CABIN", "5010 HST CABIN", "6010 HST CABIN", "6110 GEAR CABIN", "KEY LIST - ALL MODELS"],
+  "15 Series": ["1525", "1526", "1533", "1538"],
+  "1500 Series": ["1526 GEAR", "1526 HST", "1533 SHUTTLE"],
+  "16 Series": ["2516", "2615", "2638"],
+  "1600 Series": ["1640", "1665"],
+  "20 Series": ["2540", "2545", "2638"],
+  "25 Series": ["2555", "2565"],
+  "2500 Series": ["2538", "2540", "2545"],
+  "00 Series": ["3540", "4540", "5540"],
+  "05 Series": ["6075", "8090"],
+  "05 Series Old Tractors": ["7095", "8590"],
+};
 
 // Backhoe Valve, Fittings & Hardware (1526B - FIG 008) - matches the user's reference illustration
 const backhoeValveParts: PartItem[] = [
@@ -127,25 +156,33 @@ const backhoeValveParts: PartItem[] = [
 
 const sampleParts: PartItem[] = backhoeValveParts;
 
-// Filter accessories grouped by series
-export function buildFilters(series: string): PartItem[] {
-  const seed = series.replace(/\D/g, "") || "0";
+// Generic Quick Reference item builder. One demo SKU per category is intentionally
+// out-of-stock so the "create a ticket for restock" branch is reachable.
+export function buildQuickRefItems(category: string, series: string, submodel?: string): PartItem[] {
+  const seed = (series + (submodel ?? "")).replace(/\D/g, "").slice(0, 6) || "0";
+  const ctx = submodel ? `${series} → ${submodel}` : series;
+  if (category === "KEY LIST") {
+    return [
+      { partNo: `KMW${seed}078720`, description: `KEY Assy — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 1, qty: 1, cost: 7.50, mrp: 10.80, inStock: 14 },
+      { partNo: `KMW${seed}KEY02`, description: `Cab Door Key — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "Cab", aggregate: category, groupNo: "G-KEY", assembly: `KEY LIST ${ctx}`, figure: `KEY LIST ${ctx}`, refNo: 2, qty: 2, cost: 3.40, mrp: 7.25, inStock: 0 },
+    ];
+  }
+  if (category === "FILTER LIST") {
+    return [
+      { partNo: `KMW${seed}71172`, description: `Engine Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Engine", groupNo: "G-2031", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 1, qty: 1, cost: 12.40, mrp: 18.95, inStock: 142 },
+      { partNo: `KMW${seed}16465`, description: `Hydraulic Oil Filter — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Hydraulics", groupNo: "G-2032", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 2, qty: 1, cost: 28.90, mrp: 42.00, inStock: 0 },
+      { partNo: `KMW${seed}71160`, description: `Fuel Filter Element — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: "Fuel System", groupNo: "G-2033", assembly: `FILTER LIST ${ctx}`, figure: `FILTER LIST ${ctx}`, refNo: 3, qty: 1, cost: 16.75, mrp: 24.50, inStock: 64 },
+    ];
+  }
   return [
-    { partNo: `KMW${seed}71172000`, description: `Engine Oil Filter — ${series}`, category: "Filters", vehicle: "Tractor", model: series, variant: "All", aggregate: "Engine", groupNo: "G-2031", assembly: "Lube System", figure: `FILTER LIST - ${series}`, refNo: 1, qty: 1, cost: 12.40, mrp: 18.95, inStock: 142 },
-    { partNo: `KMW${seed}16465D1`, description: `Hydraulic Oil Filter — ${series}`, category: "Filters", vehicle: "Tractor", model: series, variant: "All", aggregate: "Hydraulics", groupNo: "G-2032", assembly: "Hydraulic Tank", figure: `FILTER LIST - ${series}`, refNo: 2, qty: 1, cost: 28.90, mrp: 42.00, inStock: 88 },
-    { partNo: `KMW${seed}71160000`, description: `Fuel Filter Element — ${series}`, category: "Filters", vehicle: "Tractor", model: series, variant: "All", aggregate: "Fuel System", groupNo: "G-2033", assembly: "Fuel Filter Housing", figure: `FILTER LIST - ${series}`, refNo: 3, qty: 1, cost: 16.75, mrp: 24.50, inStock: 64 },
-    { partNo: `KMW${seed}43560`, description: `Outer Air Filter — ${series}`, category: "Filters", vehicle: "Tractor", model: series, variant: "All", aggregate: "Air Intake", groupNo: "G-2034", assembly: "Air Cleaner", figure: `FILTER LIST - ${series}`, refNo: 4, qty: 1, cost: 22.10, mrp: 31.99, inStock: 47 },
+    { partNo: `KMW${seed}A001`, description: `${category} primary item — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 1, qty: 1, cost: 24.00, mrp: 39.95, inStock: 22 },
+    { partNo: `KMW${seed}A002`, description: `${category} accessory — ${ctx}`, category, vehicle: "Tractor", model: submodel ?? series, variant: "All", aggregate: category, groupNo: "G-QR", assembly: `${category} ${ctx}`, figure: `${category} ${ctx}`, refNo: 2, qty: 1, cost: 11.00, mrp: 17.50, inStock: 0 },
   ];
 }
 
-// Keys grouped by series
-export function buildKeys(series: string): PartItem[] {
-  const seed = series.replace(/\D/g, "") || "0";
-  return [
-    { partNo: `KMW${seed}KEY001`, description: `Ignition Key — ${series} (All Models)`, category: "Keys", vehicle: "Tractor", model: series, variant: "All", aggregate: "Electrical", groupNo: "G-KEY", assembly: "Ignition Switch", figure: `KEY LIST - ${series}`, refNo: 1, qty: 2, cost: 3.20, mrp: 6.95, inStock: 220 },
-    { partNo: `KMW${seed}KEY002`, description: `Cab Door Key — ${series}`, category: "Keys", vehicle: "Tractor", model: series, variant: "Cab", aggregate: "Cab", groupNo: "G-KEY", assembly: "Door Lock", figure: `KEY LIST - ${series}`, refNo: 2, qty: 2, cost: 3.40, mrp: 7.25, inStock: 180 },
-  ];
-}
+// Backwards-compat helpers used by older suggestions / triggers.
+export const buildFilters = (series: string) => buildQuickRefItems("FILTER LIST", series);
+export const buildKeys = (series: string) => buildQuickRefItems("KEY LIST", series);
 
 export function partsByFigure(figure: string): PartItem[] {
   const items = sampleParts.filter((p) => p.figure === figure);
@@ -167,7 +204,7 @@ export function searchParts(query: string, model: string, variant: string): Part
 
 export type FlowKey =
   | "part-search"
-  | "accessory-search"
+  | "quick-reference"
   | "create-ticket"
   | "wrong-part"
   | "missing-part"
@@ -175,7 +212,7 @@ export type FlowKey =
   | "eta-fallback";
 
 export const flowTriggers: { match: RegExp; flow: FlowKey; userText: string }[] = [
-  { match: /filter|key list|accessor/i, flow: "accessory-search", userText: "I want to find a filter or key" },
+  { match: /quick reference|filter list|key list|battery|hitch|cabin|cameras|electrical|maintenance|manual list|lubricant|3rd function|auxiliary valve|block heater|glopower|browse/i, flow: "quick-reference", userText: "Browse Quick Reference" },
   { match: /find.*part|search.*part|part\s*(no|number)|i need a part|kmw\d+/i, flow: "part-search", userText: "I need to find a part" },
   { match: /service ticket|create.*ticket/i, flow: "create-ticket", userText: "I want to create a service ticket" },
   { match: /wrong part|received.*instead|brk-rr/i, flow: "wrong-part", userText: "I want to report a wrong part on order 111005277" },
@@ -191,10 +228,10 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
         { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **attachment category** is this for?" } },
         { delay: 250, message: { id: uid(), role: "bot", type: "attachment-picker" } },
       ];
-    case "accessory-search":
+    case "quick-reference":
       return [
-        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Got it — accessories are organised under **Filter List** and **Key List**, then by **Series**. Pick one to start:" } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "accessory-picker", kind: "Filter" } },
+        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — Quick Reference covers everything from filters and keys to hitch parts, batteries, hydraulics and more. Which **category** would you like to browse?" } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "quick-ref-picker" } },
       ];
     case "create-ticket":
       return [
