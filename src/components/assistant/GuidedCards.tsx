@@ -386,7 +386,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
                 </button>
               </div>
             </div>
-            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
+            <div className="aspect-[4/3] @[520px]:aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
               {part.category === "Filters" ? (
                 <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
               ) : part.category === "Keys" ? (
