@@ -349,12 +349,20 @@ export function Assistant() {
     }, 250);
   }, []);
 
-  const onCreateTicketEta = useCallback(() => {
+  const onCreateTicketEta = useCallback((ticketId?: string) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: "Yes, create a ticket" });
-    setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
+    if (ticketId) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Your support ticket has been created successfully." }), 500);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "ticket", ticketId }), 1000);
+    } else {
+      setTimeout(() => runSteps(buildCreateTicketFromEta()), 250);
+    }
   }, []);
 
   const onCheckLater = useCallback(() => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: "No" });
+    setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "No problem. Is there anything else I can help you with?" }), 400);
+  }, []);
     const t = new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     toast.success(`We'll re-check at ${t}`);
     pushMessage({ id: newId(), role: "bot", type: "text", text: `No problem — I'll re-check at **${t}** and notify you.` });
