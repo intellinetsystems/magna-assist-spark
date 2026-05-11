@@ -325,6 +325,7 @@ export function Assistant() {
                 onMaximize={() => setMode("full")}
                 onMinimize={() => setMode("closed")}
                 onClose={endSession}
+                onNewChat={newChat}
                 showMax
               />
               <Thread
