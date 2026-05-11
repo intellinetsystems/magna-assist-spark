@@ -46,7 +46,7 @@ export const newId = uid;
 
 export const suggestions = [
   "Find a part",
-  "Find a filter or key",
+  "Browse Quick Reference",
   "Track my last order",
   "Create a service ticket",
 ];
