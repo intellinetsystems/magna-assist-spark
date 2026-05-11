@@ -63,15 +63,16 @@ export const quickActions = [
 
 // Mahindra Tractors USA - popular models
 export const popularModels = [
-  "1526 Backhoe", "2638 HST", "4540 4WD", "6075 PST", "eMax 20S HST", "Max 26XLT", "9125 S", "Retriever 1000",
+  "1526 Backhoe", "2638 HST", "4500 2WD", "4540 4WD", "6075 PST", "eMax 20S HST", "Max 26XLT", "9125 S",
 ];
 export const moreModels = [
-  "1533 HST", "1635 Shuttle", "3640 PST", "5145 4WD", "7095 S Cab", "8090 PST Cab", "Roxor", "eMax 22L",
+  "1533 HST", "1635 Shuttle", "3640 PST", "5145 4WD", "7095 S Cab", "8090 PST Cab", "Roxor", "eMax 22L", "Retriever 1000",
 ];
 
 export const variantsByModel: Record<string, string[]> = {
   "1526 Backhoe": ["1526B", "1526L", "1526 HST 4WD"],
   "2638 HST": ["Open Station ROPS", "Cab", "HST 4WD with Loader & Backhoe"],
+  "4500 2WD": ["4500 2WD"],
   "4540 4WD": ["2WD ROPS", "4WD ROPS", "4WD Cab"],
   "6075 PST": ["PST Cab", "PST ROPS", "Power Shuttle 4WD"],
   "eMax 20S HST": ["Open Station", "with Loader", "with Mid-Mount Mower"],
