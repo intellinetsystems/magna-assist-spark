@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, MessageSquare, Send,
+  Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
   Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
 } from "lucide-react";
@@ -50,6 +50,7 @@ export function Assistant() {
   const [textMode, setTextMode] = useState(false);
   const [input, setInput] = useState("");
   const [listening, setListening] = useState(false);
+  const [inCall, setInCall] = useState(false);
   const [quickOpen, setQuickOpen] = useState(false);
   const [transcriptOpen, setTranscriptOpen] = useState(true);
   const [unread, setUnread] = useState(false);
@@ -373,6 +374,16 @@ export function Assistant() {
   }
 
   function toggleMic() { setListening((v) => !v); }
+  function startCall() {
+    setInCall(true);
+    setListening(true);
+    pushMessage({ id: newId(), role: "bot", type: "text", text: "📞 **Call connected with MAgNA AI.** I'm listening — go ahead and speak. Tap the red button to hang up when you're done." });
+  }
+  function endCall() {
+    setInCall(false);
+    setListening(false);
+    pushMessage({ id: newId(), role: "bot", type: "text", text: "📴 **Call ended.** You can keep chatting here or start a new call anytime." });
+  }
 
   const renderMessage = (m: ChatMessage) => {
     if (m.role === "user" && m.type === "text") return <UserBubble key={m.id} text={m.text} />;
@@ -465,7 +476,9 @@ export function Assistant() {
                 input={input}
                 setInput={setInput}
                 onSend={() => handleUserInput(input)}
-                onEnd={() => { setListening(false); setMode("closed"); }}
+                onEnd={endCall}
+                onStartCall={startCall}
+                inCall={inCall}
               />
             </div>
           </motion.div>
@@ -552,7 +565,9 @@ export function Assistant() {
                 input={input}
                 setInput={setInput}
                 onSend={() => handleUserInput(input)}
-                onEnd={() => { setListening(false); setMode("closed"); }}
+                onEnd={endCall}
+                onStartCall={startCall}
+                inCall={inCall}
               />
             </div>
           </motion.div>
@@ -746,7 +761,7 @@ function Welcome({ onSuggestion }: { onSuggestion: (s: string) => void }) {
   );
 }
 
-function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, onSend, onEnd }: {
+function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, onSend, onEnd, onStartCall, inCall }: {
   listening: boolean;
   toggleMic: () => void;
   textMode: boolean;
@@ -755,6 +770,8 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
   setInput: (v: string) => void;
   onSend: () => void;
   onEnd: () => void;
+  onStartCall: () => void;
+  inCall: boolean;
 }) {
   return (
     <div className="border-t border-black/5 bg-white/90 backdrop-blur p-4">
@@ -778,22 +795,35 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
       <div className="flex items-center justify-center gap-4">
         <button
           onClick={toggleMic}
-          aria-label={listening ? "Stop microphone" : "Start microphone"}
+          disabled={!inCall}
+          aria-label={listening ? "Mute microphone" : "Unmute microphone"}
           className={`w-11 h-11 rounded-full border flex items-center justify-center transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2 ${
-            listening
+            !inCall
+              ? "bg-white border-black/10 text-[var(--ink-500)] opacity-50 cursor-not-allowed"
+              : listening
               ? "bg-[var(--brand-50)] border-[var(--brand-500)] text-[var(--brand-600)] ring-4 ring-[var(--brand-200)]/40 animate-pulse"
               : "bg-white border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-2)]"
           }`}
         >
-          {listening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          {listening && inCall ? <Mic className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
         </button>
-        <button
-          onClick={onEnd}
-          aria-label="End call"
-          className="w-14 h-14 rounded-full bg-gradient-brand text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
-        >
-          <PhoneOff className="w-6 h-6" />
-        </button>
+        {inCall ? (
+          <button
+            onClick={onEnd}
+            aria-label="Hang up call"
+            className="w-14 h-14 rounded-full bg-gradient-brand text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2"
+          >
+            <PhoneOff className="w-6 h-6" />
+          </button>
+        ) : (
+          <button
+            onClick={onStartCall}
+            aria-label="Call MAgNA AI"
+            className="w-14 h-14 rounded-full bg-emerald-500 hover:bg-emerald-600 text-white flex items-center justify-center shadow-soft-lg hover:scale-105 transition focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2"
+          >
+            <Phone className="w-6 h-6" />
+          </button>
+        )}
         <button
           onClick={() => setTextMode(!textMode)}
           aria-label="Toggle text input"
