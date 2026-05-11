@@ -332,8 +332,10 @@ export function Assistant() {
     }} />;
     if (m.type === "ticket") return <TicketCard key={m.id} ticketId={m.ticketId} />;
     if (m.type === "tracking") return <TrackingCardEx key={m.id} orderId={m.orderId} eta={m.eta} />;
-    if (m.type === "model-picker") return <ModelPickerCard key={m.id} onSubmit={onModelPick} />;
+    if (m.type === "attachment-picker") return <AttachmentPickerCard key={m.id} onSubmit={onAttachmentPick} />;
+    if (m.type === "model-picker") return <ModelPickerCard key={m.id} attachment={m.attachment} onSubmit={onModelPick} />;
     if (m.type === "variant-picker") return <VariantPickerCard key={m.id} model={m.model} onSubmit={onVariantPick} />;
+    if (m.type === "assembly-picker") return <AssemblyPickerCard key={m.id} model={m.model} variant={m.variant} onSubmit={onAssemblyPick} />;
     if (m.type === "part-query") return <PartQueryCard key={m.id} model={m.model} variant={m.variant} onSubmit={onPartQuery} />;
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
     if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} />;
