@@ -774,6 +774,8 @@ export function Assistant() {
           </div>
         )}
       </AnimatePresence>
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} settings={settings} setSettings={setSettings} onClearAll={clearAllConversations} />
     </>
   );
 }
