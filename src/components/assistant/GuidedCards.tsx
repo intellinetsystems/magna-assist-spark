@@ -203,18 +203,47 @@ export function ResultListCard({ items, query, model, variant, onSelect }: {
 }
 
 function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
-  // Backhoe Valve, Fittings & Hardware (1526B - FIG 008) — manifold w/ adapter callouts.
-  // 10 callouts arranged to match the reference illustration.
+  // Real reference illustration: Backhoe Valve, Fittings & Hardware (1526B - FIG 008)
+  // Highlight rings positioned over each callout box (% of image width/height).
+  const callouts: Record<number, { x: number; y: number }[]> = {
+    1:  [{ x: 66, y: 23 }],
+    2:  [{ x: 25, y: 50 }],
+    3:  [{ x: 60, y: 10 }],
+    5:  [{ x: 29, y: 13 }],
+    6:  [{ x: 18, y: 24 }, { x: 84, y: 55 }, { x: 58, y: 79 }],
+    7:  [{ x: 51, y: 91 }],
+    8:  [{ x: 86, y: 81 }],
+    9:  [{ x: 15, y: 60 }],
+    10: [{ x: 34, y: 8 }],
+  };
+  const points = callouts[highlightId] ?? [];
+  return (
+    <div className="relative w-full h-full">
+      <img
+        src={backhoeValveFig}
+        alt="Backhoe Valve, Fittings & Hardware (1526B - FIG 008) illustration"
+        className="w-full h-full object-contain select-none"
+        draggable={false}
+      />
+      {points.map((p, i) => (
+        <span
+          key={i}
+          className="absolute -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ left: `${p.x}%`, top: `${p.y}%` }}
+          aria-hidden
+        >
+          <span className="block w-9 h-9 rounded-md ring-[3px] ring-[#E11D2E] animate-pulse shadow-[0_0_0_4px_rgba(225,29,46,0.18)]" />
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function _LegacyAssemblyDiagramSVG({ highlightId = 9 }: { highlightId?: number }) {
   const callouts: Record<number, { x: number; y: number }> = {
-    1: { x: 280, y: 70 },   // valve top section
-    2: { x: 158, y: 138 },  // adapter mid-left
-    3: { x: 320, y: 38 },   // hex cap screw top
-    5: { x: 88, y: 52 },    // hex nut top-left
-    6: { x: 110, y: 100 },  // 90° adapter (left)
-    7: { x: 250, y: 268 },  // bottom adapter
-    8: { x: 410, y: 252 },  // bottom-right tee
-    9: { x: 70, y: 188 },   // HIGHLIGHT — KMW05863406506
-    10:{ x: 65, y: 30 },    // washer
+    1: { x: 280, y: 70 }, 2: { x: 158, y: 138 }, 3: { x: 320, y: 38 },
+    5: { x: 88, y: 52 }, 6: { x: 110, y: 100 }, 7: { x: 250, y: 268 },
+    8: { x: 410, y: 252 }, 9: { x: 70, y: 188 }, 10: { x: 65, y: 30 },
   };
   const Box = ({ id }: { id: number }) => {
     const c = callouts[id];
@@ -222,14 +251,9 @@ function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
     const active = id === highlightId;
     return (
       <g>
-        <rect
-          x={c.x - 14} y={c.y - 12} width="28" height="24" rx="2"
-          fill={active ? "#FFE4E6" : "#fff"}
-          stroke={active ? "#E11D2E" : "#111827"}
-          strokeWidth={active ? 2.4 : 1.5}
-        >
-          {active && <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.6s" repeatCount="indefinite" />}
-        </rect>
+        <rect x={c.x - 14} y={c.y - 12} width="28" height="24" rx="2"
+          fill={active ? "#FFE4E6" : "#fff"} stroke={active ? "#E11D2E" : "#111827"}
+          strokeWidth={active ? 2.4 : 1.5} />
         <text x={c.x} y={c.y + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill={active ? "#E11D2E" : "#111827"}>{id}</text>
       </g>
     );
