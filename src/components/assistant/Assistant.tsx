@@ -485,6 +485,14 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
         </div>
       </div>
       {listening && <Waveform active listening className="hidden md:flex" />}
+      <button
+        onClick={onNewChat}
+        aria-label="Start new chat"
+        title="Start new chat"
+        className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
+      >
+        <MessageSquarePlus className="w-4 h-4" />
+      </button>
       <div className="relative">
         <button
           onClick={() => setQuickOpen(!quickOpen)}
