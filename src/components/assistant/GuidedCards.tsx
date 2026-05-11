@@ -300,8 +300,8 @@ export function PartDetailCard({ part }: { part: PartItem }) {
     { type: "image", icon: ImageIcon, name: "Hi-res_Photos", size: "4 images", color: "text-amber-600 bg-amber-50", action: "Preview" },
   ];
   const alternates = [
-    { partNo: "S0601D010099N", mrp: 54 }, { partNo: "S0601D010122N", mrp: 61 },
-    { partNo: "S0601D010188N", mrp: 49 }, { partNo: "S0601D010201N", mrp: 65 },
+    { partNo: "KMW05863108408", mrp: 27.95 }, { partNo: "KMW05862408508", mrp: 25.50 },
+    { partNo: "KMW05863106406", mrp: 15.40 }, { partNo: "KMW05861106406", mrp: 21.50 },
   ];
 
   return (
