@@ -361,6 +361,8 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
   const outOfStock = part.inStock <= 0;
   const [exploded, setExploded] = useState(false);
   const [video, setVideo] = useState(false);
+  const isDrawbar = /DRAWBAR/i.test(part.figure);
+  const pillColor = part.highlight === "purple" || isDrawbar ? "bg-purple-600" : "bg-[var(--brand-600)]";
   const attachments = [
     { type: "video", icon: Play, name: "Install_Guide.mp4", size: "12.4 MB", color: "text-[var(--brand-600)] bg-[var(--brand-50)]", action: "Watch" },
     { type: "pdf", icon: FileText, name: "Spec_Sheet.pdf", size: "840 KB", color: "text-rose-600 bg-rose-50", action: "Open" },
