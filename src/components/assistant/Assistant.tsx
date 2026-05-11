@@ -971,20 +971,22 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
         onSubmit={(e) => { e.preventDefault(); onSend(); }}
         className="flex items-end gap-2 bg-[var(--surface-1)] border border-black/10 rounded-3xl px-3 py-2 focus-within:ring-2 focus-within:ring-[var(--brand-200)]"
       >
-        {/* Mic — toggles mute when in a call; otherwise starts a call */}
-        <button
-          type="button"
-          onClick={() => { if (inCall) toggleMic(); else onStartCall(); }}
-          aria-label={inCall ? (listening ? "Mute microphone" : "Unmute microphone") : "Start voice input"}
-          title={inCall ? (listening ? "Mute" : "Unmute") : "Voice input"}
-          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition ${
-            inCall && listening
-              ? "bg-[var(--brand-600)] text-white ring-4 ring-[var(--brand-200)]/40 animate-pulse"
-              : "bg-white border border-black/10 text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
-          }`}
-        >
-          {inCall && !listening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-        </button>
+        {/* Mic — only visible during an active call to mute/unmute */}
+        {inCall && (
+          <button
+            type="button"
+            onClick={toggleMic}
+            aria-label={listening ? "Mute microphone" : "Unmute microphone"}
+            title={listening ? "Mute" : "Unmute"}
+            className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition ${
+              listening
+                ? "bg-[var(--brand-600)] text-white ring-4 ring-[var(--brand-200)]/40 animate-pulse"
+                : "bg-white border border-black/10 text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
+            }`}
+          >
+            {listening ? <Mic className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+          </button>
+        )}
 
         <textarea
           value={input}
