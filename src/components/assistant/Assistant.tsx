@@ -193,7 +193,7 @@ export function Assistant() {
   function handleSuggestion(s: string) {
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
-      "Find a filter or key": "accessory-search",
+      "Browse Quick Reference": "quick-reference",
       "Track my last order": "track-eta",
       "Report an order issue": "wrong-part",
       "Create a service ticket": "create-ticket",
