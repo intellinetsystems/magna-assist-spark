@@ -678,26 +678,36 @@ export function Assistant() {
               </div>
               <div className="px-5 mt-5 mb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Chat History</div>
               <div className="px-3 space-y-1 flex-1 overflow-auto scrollbar-thin">
-                {historyMock.map((h, i) => (
-                  <button key={i} className={`w-full text-left flex items-start gap-2 px-3 py-2 rounded-xl text-xs leading-snug hover:bg-white transition border ${i === 0 ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--ink-900)]" : "border-transparent text-[var(--ink-700)]"}`}>
-                    <MessageCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--brand-600)]" />
-                    <span className="line-clamp-2">{h}</span>
-                  </button>
-                ))}
+                {chatHistory.length === 0 && (
+                  <div className="px-3 py-2 text-[11px] text-[var(--ink-500)] italic">No chats yet — start one below.</div>
+                )}
+                {chatHistory.map((c) => {
+                  const active = c.id === activeChatId;
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => loadChat(c)}
+                      className={`w-full text-left flex items-start gap-2 px-3 py-2 rounded-xl text-xs leading-snug hover:bg-white transition border ${active ? "bg-[var(--brand-50)] border-[var(--brand-200)] text-[var(--ink-900)]" : "border-transparent text-[var(--ink-700)]"}`}
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-[var(--brand-600)]" />
+                      <span className="line-clamp-2">{c.title}</span>
+                    </button>
+                  );
+                })}
               </div>
               <div className="p-3 border-t border-black/5 space-y-1">
-                {[
-                  { Icon: HelpCircle, label: "Help", chev: true },
-                  { Icon: Settings, label: "Settings" },
-                  { Icon: Trash2, label: "Clear conversations" },
-                  { Icon: LogOut, label: "Log out" },
-                ].map(({ Icon, label, chev }) => (
-                  <button key={label} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
-                    <Icon className="w-4 h-4" />
-                    <span className="flex-1 text-left">{label}</span>
-                    {chev && <ChevronRight className="w-3 h-3" />}
-                  </button>
-                ))}
+                <button onClick={() => toast("Help center coming soon")} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <HelpCircle className="w-4 h-4" /><span className="flex-1 text-left">Help</span><ChevronRight className="w-3 h-3" />
+                </button>
+                <button onClick={() => setSettingsOpen(true)} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <Settings className="w-4 h-4" /><span className="flex-1 text-left">Settings</span>
+                </button>
+                <button onClick={clearAllConversations} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <Trash2 className="w-4 h-4" /><span className="flex-1 text-left">Clear conversations</span>
+                </button>
+                <button onClick={() => { endSession(); toast("Logged out"); }} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-white text-xs text-[var(--ink-700)]">
+                  <LogOut className="w-4 h-4" /><span className="flex-1 text-left">Log out</span>
+                </button>
               </div>
             </aside>
 
