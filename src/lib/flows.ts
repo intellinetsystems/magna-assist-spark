@@ -204,7 +204,7 @@ export function searchParts(query: string, model: string, variant: string): Part
 
 export type FlowKey =
   | "part-search"
-  | "accessory-search"
+  | "quick-reference"
   | "create-ticket"
   | "wrong-part"
   | "missing-part"
@@ -212,7 +212,7 @@ export type FlowKey =
   | "eta-fallback";
 
 export const flowTriggers: { match: RegExp; flow: FlowKey; userText: string }[] = [
-  { match: /filter|key list|accessor/i, flow: "accessory-search", userText: "I want to find a filter or key" },
+  { match: /quick reference|filter list|key list|battery|hitch|cabin|cameras|electrical|maintenance|manual list|lubricant|3rd function|auxiliary valve|block heater|glopower|browse/i, flow: "quick-reference", userText: "Browse Quick Reference" },
   { match: /find.*part|search.*part|part\s*(no|number)|i need a part|kmw\d+/i, flow: "part-search", userText: "I need to find a part" },
   { match: /service ticket|create.*ticket/i, flow: "create-ticket", userText: "I want to create a service ticket" },
   { match: /wrong part|received.*instead|brk-rr/i, flow: "wrong-part", userText: "I want to report a wrong part on order 111005277" },
@@ -228,10 +228,10 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
         { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **attachment category** is this for?" } },
         { delay: 250, message: { id: uid(), role: "bot", type: "attachment-picker" } },
       ];
-    case "accessory-search":
+    case "quick-reference":
       return [
-        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Got it — accessories are organised under **Filter List** and **Key List**, then by **Series**. Pick one to start:" } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "accessory-picker", kind: "Filter" } },
+        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — Quick Reference covers everything from filters and keys to hitch parts, batteries, hydraulics and more. Which **category** would you like to browse?" } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "quick-ref-picker" } },
       ];
     case "create-ticket":
       return [
