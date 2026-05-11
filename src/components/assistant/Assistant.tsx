@@ -1035,3 +1035,114 @@ function Dock({ listening, toggleMic, textMode, setTextMode, input, setInput, on
     </div>
   );
 }
+
+function SettingsModal({ open, onClose, settings, setSettings, onClearAll }: {
+  open: boolean;
+  onClose: () => void;
+  settings: Settings;
+  setSettings: (s: Settings) => void;
+  onClearAll: () => void;
+}) {
+  if (!open) return null;
+  const update = <K extends keyof Settings>(k: K, v: Settings[K]) => setSettings({ ...settings, [k]: v });
+  return (
+    <div className="fixed inset-0 z-[70] bg-black/50 flex items-center justify-center p-6" onClick={onClose}>
+      <motion.div
+        initial={{ scale: 0.96, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-3xl p-6 max-w-md w-full shadow-soft-lg max-h-[85vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-base font-semibold text-[var(--ink-900)]">Settings</div>
+            <div className="text-xs text-[var(--ink-500)]">Personalize your MAgNA AI experience</div>
+          </div>
+          <button onClick={onClose} aria-label="Close" className="p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
+        </div>
+
+        <Section title="Voice & Language">
+          <Row label="Assistant voice">
+            <select value={settings.voice} onChange={(e) => update("voice", e.target.value as Settings["voice"])} className="text-xs bg-[var(--surface-1)] border border-black/10 rounded-lg px-2 py-1.5">
+              <option value="female-en">Aria (Female · English)</option>
+              <option value="male-en">Atlas (Male · English)</option>
+              <option value="female-hi">Anaya (Female · Hindi)</option>
+            </select>
+          </Row>
+          <Row label="Language">
+            <select value={settings.language} onChange={(e) => update("language", e.target.value as Settings["language"])} className="text-xs bg-[var(--surface-1)] border border-black/10 rounded-lg px-2 py-1.5">
+              <option value="en-US">English (US)</option>
+              <option value="en-IN">English (India)</option>
+              <option value="hi-IN">हिन्दी (Hindi)</option>
+            </select>
+          </Row>
+          <Row label="Auto-listen on call start">
+            <Toggle on={settings.autoListen} onChange={(v) => update("autoListen", v)} />
+          </Row>
+        </Section>
+
+        <Section title="Responses">
+          <Row label="Response style">
+            <div className="flex gap-1">
+              {(["concise", "detailed"] as const).map((v) => (
+                <button key={v} onClick={() => update("responseStyle", v)} className={`text-xs px-3 py-1.5 rounded-full border ${settings.responseStyle === v ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)]"}`}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </Row>
+        </Section>
+
+        <Section title="Notifications">
+          <Row label="Order & ticket updates">
+            <Toggle on={settings.notifications} onChange={(v) => update("notifications", v)} />
+          </Row>
+        </Section>
+
+        <Section title="Appearance">
+          <Row label="Theme">
+            <div className="flex gap-1">
+              {(["light", "system"] as const).map((v) => (
+                <button key={v} onClick={() => update("theme", v)} className={`text-xs px-3 py-1.5 rounded-full border ${settings.theme === v ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)]" : "bg-white border-black/10 text-[var(--ink-700)]"}`}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </button>
+              ))}
+            </div>
+          </Row>
+        </Section>
+
+        <Section title="Data">
+          <button onClick={() => { onClearAll(); onClose(); }} className="w-full text-xs px-3 py-2 rounded-xl border border-rose-200 text-rose-700 bg-rose-50 hover:bg-rose-100 inline-flex items-center justify-center gap-1.5">
+            <Trash2 className="w-3.5 h-3.5" /> Clear all conversations
+          </button>
+        </Section>
+
+        <div className="text-[10px] text-[var(--ink-500)] text-center mt-4">MAgNA AI Assistant · v1.0.0</div>
+      </motion.div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-4">
+      <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">{title}</div>
+      <div className="space-y-2 bg-[var(--surface-1)] rounded-2xl p-3 border border-black/5">{children}</div>
+    </div>
+  );
+}
+function Row({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="text-xs text-[var(--ink-700)]">{label}</div>
+      {children}
+    </div>
+  );
+}
+function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <button onClick={() => onChange(!on)} aria-pressed={on} className={`w-10 h-6 rounded-full transition relative ${on ? "bg-[var(--brand-600)]" : "bg-[var(--ink-300)]"}`}>
+      <span className={`absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all ${on ? "left-[18px]" : "left-0.5"}`} />
+    </button>
+  );
+}
