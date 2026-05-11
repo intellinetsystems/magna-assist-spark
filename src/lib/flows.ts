@@ -24,8 +24,10 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "tracking"; orderId: string; eta: string }
   | { id: string; role: "bot"; type: "order-header"; orderId: string; placed: string; items: number; total: string }
   | { id: string; role: "bot"; type: "eta-pending"; orderId: string }
-  | { id: string; role: "bot"; type: "model-picker" }
-  | { id: string; role: "bot"; type: "variant-picker"; model: string }
+  | { id: string; role: "bot"; type: "attachment-picker" }
+  | { id: string; role: "bot"; type: "model-picker"; attachment: string }
+  | { id: string; role: "bot"; type: "variant-picker"; attachment: string; model: string }
+  | { id: string; role: "bot"; type: "assembly-picker"; attachment: string; model: string; variant: string }
   | { id: string; role: "bot"; type: "part-query"; model: string; variant: string }
   | { id: string; role: "bot"; type: "result-list"; query: string; model: string; variant: string; items: PartItem[] }
   | { id: string; role: "bot"; type: "part-detail"; part: PartItem }
@@ -74,6 +76,36 @@ export const partCategories = [
   "Engine", "Hydraulics", "Transmission / PTO", "Electrical", "Filters", "Front Axle / Loader", "Cab & Seat", "Tires & Wheels",
 ];
 
+// --- Parts hierarchy: Attachment → Model → Variant → Assembly (Figure) → Parts ---
+export const attachmentCategories = [
+  "Backhoe", "Hay Tools & Equipment", "Implements", "Loader", "Mower", "New Implements",
+];
+
+export const modelsByAttachment: Record<string, string[]> = {
+  "Backhoe": ["1526 Backhoe", "Max 26XLT", "2638 HST"],
+  "Loader": ["1526 Backhoe", "4540 4WD", "6075 PST", "eMax 20S HST"],
+  "Mower": ["eMax 20S HST", "Max 26XLT"],
+  "Implements": ["4540 4WD", "6075 PST", "9125 S"],
+  "Hay Tools & Equipment": ["6075 PST", "9125 S"],
+  "New Implements": ["1526 Backhoe", "Max 26XLT", "4540 4WD"],
+};
+
+// Available assembly figures per (model + variant). Default keyed by variant.
+export const assembliesByVariant: Record<string, { figure: string; label: string }[]> = {
+  "1526B": [
+    { figure: "1526B - FIG 008", label: "Backhoe Valve, Fittings & Hardware (FIG 008)" },
+    { figure: "1526B - FIG 009", label: "Boom & Dipper Cylinder (FIG 009)" },
+    { figure: "1526B - FIG 010", label: "Swing Frame & Stabilizers (FIG 010)" },
+  ],
+  "1526L": [
+    { figure: "1526L - FIG 002", label: "Loader Frame & Hardware (FIG 002)" },
+    { figure: "1526L - FIG 003", label: "Loader Hydraulic Lines (FIG 003)" },
+  ],
+};
+export const defaultAssemblies: { figure: string; label: string }[] = [
+  { figure: "1526B - FIG 008", label: "Backhoe Valve, Fittings & Hardware (FIG 008)" },
+];
+
 // --- Accessories (Filters / Keys) hierarchy by Series ---
 export const accessorySeries = [
   "00 Series", "05 Series", "05 Series Old Tractors", "10 Series", "15 Series",
@@ -115,6 +147,11 @@ export function buildKeys(series: string): PartItem[] {
   ];
 }
 
+export function partsByFigure(figure: string): PartItem[] {
+  const items = sampleParts.filter((p) => p.figure === figure);
+  return items.length ? items : sampleParts;
+}
+
 export function searchParts(query: string, model: string, variant: string): PartItem[] {
   const q = query.trim().toLowerCase();
   // Exact part-no match returns 1
@@ -151,8 +188,8 @@ export function buildFlow(flow: FlowKey): FlowStep[] {
   switch (flow) {
     case "part-search":
       return [
-        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **vehicle model** is this for?" } },
-        { delay: 250, message: { id: uid(), role: "bot", type: "model-picker" } },
+        { delay: 400, message: { id: uid(), role: "bot", type: "text", text: "Sure — let's find the right part. Which **attachment category** is this for?" } },
+        { delay: 250, message: { id: uid(), role: "bot", type: "attachment-picker" } },
       ];
     case "accessory-search":
       return [
