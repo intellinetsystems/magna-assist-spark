@@ -556,3 +556,106 @@ export function TrackingCardEx({ orderId, eta }: { orderId: string; eta: string 
     </BotShell>
   );
 }
+
+// ---------- Accessories (Filter / Key) hierarchy ----------
+export function AccessoryPickerCard({
+  kind: initialKind,
+  onPick,
+}: {
+  kind: "Filter" | "Key";
+  onPick: (kind: "Filter" | "Key", series: string) => void;
+}) {
+  const [kind, setKind] = useState<"Filter" | "Key">(initialKind);
+  const [search, setSearch] = useState("");
+  const list = accessorySeries.filter((s) => s.toLowerCase().includes(search.toLowerCase()));
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="flex items-center gap-2 mb-3">
+          {(["Filter", "Key"] as const).map((k) => (
+            <button
+              key={k}
+              onClick={() => setKind(k)}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition ${
+                kind === k
+                  ? "bg-[var(--brand-600)] text-white border-[var(--brand-600)] shadow-soft"
+                  : "bg-white text-[var(--ink-700)] border-black/10 hover:bg-[var(--brand-50)]"
+              }`}
+            >
+              {k} List
+            </button>
+          ))}
+        </div>
+        <div className="text-[11px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">
+          Choose Series
+        </div>
+        <div className="flex items-center gap-1.5 bg-[var(--surface-1)] border border-black/5 rounded-full px-3 py-1.5 mb-2">
+          <Search className="w-3.5 h-3.5 text-[var(--ink-500)]" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search series…"
+            className="bg-transparent text-xs outline-none flex-1"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((s) => (
+            <button
+              key={s}
+              onClick={() => onPick(kind, s)}
+              className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate">{s}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function AccessoryListCard({
+  kind,
+  series,
+  items,
+  onSelect,
+}: {
+  kind: "Filter" | "Key";
+  series: string;
+  items: PartItem[];
+  onSelect: (p: PartItem) => void;
+}) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-2xl">
+        <div className="text-sm text-[var(--ink-700)] mb-3">
+          {kind} List → <strong className="text-[var(--ink-900)]">{series}</strong> · {items.length} items
+        </div>
+        <div className="space-y-2">
+          {items.map((p) => (
+            <button
+              key={p.partNo}
+              onClick={() => onSelect(p)}
+              className="w-full flex items-center gap-3 p-3 rounded-2xl border border-black/5 hover:bg-[var(--brand-50)]/40 hover:border-[var(--brand-200)] hover:shadow-soft transition text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[var(--surface-1)] border border-black/5 shrink-0 flex items-center justify-center text-[10px] text-[var(--ink-500)] font-mono">
+                #{p.refNo}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-mono text-[13px] font-semibold text-[var(--brand-600)] truncate">{p.partNo}</div>
+                <div className="text-sm text-[var(--ink-900)] mt-0.5 truncate">{p.description}</div>
+                <div className="text-[11px] text-[var(--ink-500)] mt-0.5 truncate">{p.aggregate} · {p.assembly}</div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="text-[10px] text-[var(--ink-500)] uppercase">MRP</div>
+                <div className="text-sm font-semibold text-[var(--ink-900)]">${p.mrp.toFixed(2)}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
