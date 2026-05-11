@@ -598,8 +598,8 @@ export function OrderHeaderCard({ orderId, placed, items, total }: {
   );
 }
 
-export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater }: {
-  orderId: string; onCreateTicket: () => void; onCheckLater: () => void;
+export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater, partNos }: {
+  orderId: string; onCreateTicket: () => void; onCheckLater: () => void; partNos?: string[];
 }) {
   return (
     <BotShell>
@@ -615,12 +615,20 @@ export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater }: {
             <p className="text-xs text-[var(--ink-500)] mt-1 leading-relaxed">
               This usually happens when the shipment was just dispatched and the carrier hasn't synced tracking info for order <span className="font-mono text-[var(--brand-600)]">#{orderId}</span>.
             </p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              <button onClick={onCreateTicket} className="bg-gradient-brand text-white text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 shadow-soft focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-                <TicketIcon className="w-3.5 h-3.5" /> Create a Ticket
+            {partNos && partNos.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                {partNos.map((p) => (
+                  <span key={p} className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-700)]">{p}</span>
+                ))}
+              </div>
+            )}
+            <div className="text-[11px] text-[var(--ink-700)] mt-3 font-medium">Would you like me to escalate this to support?</div>
+            <div className="flex flex-wrap gap-2 mt-2">
+              <button onClick={onCreateTicket} className="bg-emerald-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                <CheckCircle2 className="w-3.5 h-3.5" /> Yes, create ticket
               </button>
               <button onClick={onCheckLater} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-                <RefreshCw className="w-3.5 h-3.5" /> Check again in 1 hour
+                <X className="w-3.5 h-3.5" /> No
               </button>
             </div>
           </div>
@@ -630,27 +638,37 @@ export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater }: {
   );
 }
 
-export function TrackingCardEx({ orderId, eta }: { orderId: string; eta: string }) {
+export function TrackingCardEx({ orderId, eta, carrier = "FedEx", status, partNos }: {
+  orderId: string; eta: string; carrier?: string; status?: string; partNos?: string[];
+}) {
+  const isInTransit = status === "In Transit";
   const steps = [
-    { label: "Order Placed", time: "Mon, 12 May · 10:14 AM", state: "done" },
-    { label: "Warehouse Picked", time: "Mon, 12 May · 4:32 PM", state: "done" },
-    { label: "In Transit", time: "Tue, 13 May · 9:08 AM", state: "done" },
-    { label: "Out for Delivery", time: "Today · 7:45 AM", state: "current" },
-    { label: "Delivered", time: "Pending", state: "pending" },
-  ] as const;
+    { label: "Order Placed", time: "Mon, 12 May · 10:14 AM", state: "done" as const },
+    { label: "Warehouse Picked", time: "Mon, 12 May · 4:32 PM", state: "done" as const },
+    { label: "In Transit", time: "Tue, 13 May · 9:08 AM", state: isInTransit ? "current" as const : "done" as const },
+    { label: "Out for Delivery", time: isInTransit ? "Pending" : "Today · 7:45 AM", state: isInTransit ? "pending" as const : "current" as const },
+    { label: "Delivered", time: "Pending", state: "pending" as const },
+  ];
   const [notify, setNotify] = useState(false);
   return (
     <BotShell>
       <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Order</div>
+            <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Order · {carrier}</div>
             <div className="font-mono font-semibold text-[var(--brand-600)]">#{orderId}</div>
           </div>
           <span className="px-2.5 py-1 rounded-full bg-[var(--brand-50)] text-[var(--brand-700)] border border-[var(--brand-200)] text-xs font-semibold inline-flex items-center gap-1">
             <Truck className="w-3 h-3" /> ETA: {eta}
           </span>
         </div>
+        {partNos && partNos.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-1">
+            {partNos.map((p) => (
+              <span key={p} className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-700)] border border-black/5">{p}</span>
+            ))}
+          </div>
+        )}
         <ol className="space-y-3">
           {steps.map((s, i) => {
             const isCurrent = s.state === "current";
