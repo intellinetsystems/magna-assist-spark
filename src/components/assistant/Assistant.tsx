@@ -205,40 +205,61 @@ export function Assistant() {
   }
 
   // Continuation handlers for guided cards
+  const onAttachmentPick = useCallback((attachment: string) => {
+    partFlowRef.current.attachment = attachment;
+    pushMessage({ id: newId(), role: "user", type: "text", text: attachment });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${attachment}**. Which **model** is it?` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "model-picker", attachment }), 400);
+    }, 250);
+  }, []);
+
   const onModelPick = useCallback((model: string) => {
+    const attachment = partFlowRef.current.attachment ?? "Attachment";
     partFlowRef.current.model = model;
     pushMessage({ id: newId(), role: "user", type: "text", text: model });
     setTimeout(() => {
       pushMessage({ id: newId(), role: "bot", type: "text", text: `Great — and which **variant** of ${model}?` });
-      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "variant-picker", model }), 400);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "variant-picker", attachment, model }), 400);
     }, 250);
   }, []);
 
   const onVariantPick = useCallback((variant: string) => {
+    const attachment = partFlowRef.current.attachment ?? "Attachment";
     const model = partFlowRef.current.model ?? "Unknown";
-    const pendingQuery = partFlowRef.current.query;
     partFlowRef.current.variant = variant;
     pushMessage({ id: newId(), role: "user", type: "text", text: variant });
     setTimeout(() => {
-      if (pendingQuery) {
-        // Reuse the original description query — narrow within model/variant and land on the illustration.
-        pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${model} / ${variant}**. Searching for "${pendingQuery}"…` });
-        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 250);
-        setTimeout(() => {
-          const items = searchParts(pendingQuery, model, variant);
-          if (items.length === 1) {
-            pushMessage({ id: newId(), role: "bot", type: "text", text: `Here's the detail for **${items[0].partNo}** — ${items[0].description}:` });
-            setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: items[0] }), 300);
-          } else {
-            pushMessage({ id: newId(), role: "bot", type: "text", text: `Found **${items.length}** matches in ${model} / ${variant}. Pick one to see details on the illustration:` });
-            setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "result-list", query: pendingQuery, model, variant, items }), 300);
-          }
-        }, 1100);
-        return;
-      }
-      pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${model} / ${variant}**. What part are you looking for?` });
-      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-query", model, variant }), 400);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Perfect — **${attachment} → ${model} → ${variant}**. Which **assembly / figure** are you looking at?` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "assembly-picker", attachment, model, variant }), 400);
     }, 250);
+  }, []);
+
+  const onAssemblyPick = useCallback((figure: string, label: string) => {
+    const model = partFlowRef.current.model ?? "Unknown";
+    const variant = partFlowRef.current.variant ?? "All";
+    const pendingQuery = partFlowRef.current.query;
+    partFlowRef.current.figure = figure;
+    pushMessage({ id: newId(), role: "user", type: "text", text: label });
+    setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 200);
+    setTimeout(() => {
+      const all = partsByFigure(figure);
+      // If we had a pending description query, narrow within this assembly.
+      const items = pendingQuery
+        ? all.filter((p) => p.description.toLowerCase().includes(pendingQuery.toLowerCase()) || p.partNo.toLowerCase().includes(pendingQuery.toLowerCase()))
+        : all;
+      const finalItems = items.length ? items : all;
+      if (finalItems.length === 1) {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Here's the detail for **${finalItems[0].partNo}** — ${finalItems[0].description}:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: finalItems[0] }), 300);
+      } else {
+        const heading = pendingQuery
+          ? `Within **${label}**, ${finalItems.length} parts match "${pendingQuery}". Pick one to see it on the illustration:`
+          : `Here are the **${finalItems.length} parts** in *${label}*. Pick one to see it on the illustration:`;
+        pushMessage({ id: newId(), role: "bot", type: "text", text: heading });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "result-list", query: pendingQuery ?? label, model, variant, items: finalItems }), 300);
+      }
+    }, 1100);
   }, []);
 
   const onPartQuery = useCallback((q: string) => {
