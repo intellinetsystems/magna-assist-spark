@@ -830,7 +830,11 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
               {quickActions.map((q) => {
                 const Icon = qaIcons[q.icon];
                 return (
-                  <button key={q.label} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]">
+                  <button
+                    key={q.label}
+                    onClick={() => { setQuickOpen(false); onQuickAction?.(q.label); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
+                  >
                     <Icon className="w-4 h-4 text-[var(--brand-600)]" /> {q.label}
                   </button>
                 );
