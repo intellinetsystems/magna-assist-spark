@@ -421,7 +421,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
               className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-soft-lg relative" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setExploded(false)} aria-label="Close" className="absolute top-3 right-3 p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
               <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">Exploded View — {part.assembly}</div>
-              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={7} /></div>
+              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={part.refNo} /></div>
               <p className="text-xs text-[var(--ink-500)] mt-3">Click any callout to navigate · Pinch / scroll to zoom</p>
             </motion.div>
           </div>
