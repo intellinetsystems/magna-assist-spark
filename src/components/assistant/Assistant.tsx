@@ -180,18 +180,26 @@ export function Assistant() {
       return;
     }
 
-    // FLOW 3 — Swinging Drawbar attachment for 4500 2WD
-    if (/(swinging\s*drawbar|drawbar\s*attachment)/i.test(text) && /(4500|00\s*series)/i.test(text)) {
-      const part = findPart("E007900403C11");
-      if (part) {
-        const tagged = { ...part, searchTags: ["00 Series", "4500 2WD", "Swinging Drawbar", "Plate Support RH"] };
-        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
-        setTimeout(() => {
-          pushMessage({ id: newId(), role: "bot", type: "text", text: "I found the **SWINGING DRAWBAR ATTACHMENT** for **4500 2WD**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**." });
-          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: tagged }), 300);
-        }, 900);
-        return;
+    // FLOW 3 — Swinging Drawbar attachment
+    if (/(swinging\s*drawbar|drawbar\s*attachment)/i.test(text)) {
+      const hasContext = /(4500|00\s*series)/i.test(text);
+      if (hasContext) {
+        const part = findPart("E007900403C11");
+        if (part) {
+          const tagged = { ...part, searchTags: ["00 Series", "4500 2WD", "Swinging Drawbar", "Plate Support RH"] };
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+          setTimeout(() => {
+            pushMessage({ id: newId(), role: "bot", type: "text", text: "I found the **SWINGING DRAWBAR ATTACHMENT** for **4500 2WD**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**." });
+            setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: tagged }), 300);
+          }, 900);
+          return;
+        }
       }
+      // No series/model → guide user to pick Series → Sub-model
+      qrRef.current = { category: "SWINGING DRAWBAR ATTACHMENT" };
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Sure — for the **SWINGING DRAWBAR ATTACHMENT**, which **Series** is your tractor from?" }), 200);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-series", category: "SWINGING DRAWBAR ATTACHMENT" }), 600);
+      return;
     }
 
     // FLOW 1 — exact part-no lookup
