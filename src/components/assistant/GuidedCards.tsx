@@ -430,9 +430,21 @@ export function PartDetailCard({ part }: { part: PartItem }) {
             <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
               className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-soft-lg relative" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setExploded(false)} aria-label="Close" className="absolute top-3 right-3 p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
-              <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">Exploded View — {part.assembly}</div>
-              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={part.refNo} /></div>
-              <p className="text-xs text-[var(--ink-500)] mt-3">Click any callout to navigate · Pinch / scroll to zoom</p>
+              <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">
+                {part.category === "Filters" || part.category === "Keys" ? `Product Image — ${part.description}` : `Exploded View — ${part.assembly}`}
+              </div>
+              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5 flex items-center justify-center overflow-hidden">
+                {part.category === "Filters" ? (
+                  <img src={filterImg} alt={part.description} className="max-h-full max-w-full object-contain" />
+                ) : part.category === "Keys" ? (
+                  <img src={keyImg} alt={part.description} className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <AssemblyDiagram highlightId={part.refNo} />
+                )}
+              </div>
+              <p className="text-xs text-[var(--ink-500)] mt-3">
+                {part.category === "Filters" || part.category === "Keys" ? "Reference image — actual product may vary slightly." : "Click any callout to navigate · Pinch / scroll to zoom"}
+              </p>
             </motion.div>
           </div>
         )}
