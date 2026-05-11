@@ -411,6 +411,19 @@ export function Assistant() {
     const { category = "Quick Reference", series = "" } = qrRef.current;
     qrRef.current.submodel = submodel;
     pushMessage({ id: newId(), role: "user", type: "text", text: submodel });
+    // Special-case: Swinging Drawbar Attachment → 00 Series → 4500 2WD shows the illustration
+    if (/swinging\s*drawbar/i.test(category) && /4500/i.test(submodel)) {
+      const part = findPart("E007900403C11");
+      if (part) {
+        const tagged = { ...part, searchTags: ["00 Series", "4500 2WD", "Swinging Drawbar", "Plate Support RH"] };
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 200);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Here is the **SWINGING DRAWBAR ATTACHMENT** for **${series} → ${submodel}**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**.` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: tagged }), 300);
+        }, 900);
+        return;
+      }
+    }
     setTimeout(() => {
       const items = buildQuickRefItems(category, series, submodel);
       pushMessage({ id: newId(), role: "bot", type: "text", text: `Items in **${category} → ${series} → ${submodel}**:` });
