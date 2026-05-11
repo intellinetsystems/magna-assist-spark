@@ -216,9 +216,26 @@ export function Assistant() {
 
   const onVariantPick = useCallback((variant: string) => {
     const model = partFlowRef.current.model ?? "Unknown";
+    const pendingQuery = partFlowRef.current.query;
     partFlowRef.current.variant = variant;
     pushMessage({ id: newId(), role: "user", type: "text", text: variant });
     setTimeout(() => {
+      if (pendingQuery) {
+        // Reuse the original description query — narrow within model/variant and land on the illustration.
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${model} / ${variant}**. Searching for "${pendingQuery}"…` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 250);
+        setTimeout(() => {
+          const items = searchParts(pendingQuery, model, variant);
+          if (items.length === 1) {
+            pushMessage({ id: newId(), role: "bot", type: "text", text: `Here's the detail for **${items[0].partNo}** — ${items[0].description}:` });
+            setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part: items[0] }), 300);
+          } else {
+            pushMessage({ id: newId(), role: "bot", type: "text", text: `Found **${items.length}** matches in ${model} / ${variant}. Pick one to see details on the illustration:` });
+            setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "result-list", query: pendingQuery, model, variant, items }), 300);
+          }
+        }, 1100);
+        return;
+      }
       pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — **${model} / ${variant}**. What part are you looking for?` });
       setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-query", model, variant }), 400);
     }, 250);
