@@ -397,9 +397,18 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
             <button aria-label="Share" className="p-2 rounded-full border border-black/10 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
               <Share2 className="w-4 h-4 text-[var(--ink-700)]" />
             </button>
-            <button onClick={() => toast.success("Added to order")} className="bg-gradient-brand text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-              <Plus className="w-4 h-4" /> Add to Order
-            </button>
+            {outOfStock ? (
+              <button
+                onClick={() => onCreateTicket?.(part)}
+                className="bg-rose-600 text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+              >
+                <TicketIcon className="w-4 h-4" /> Create Ticket
+              </button>
+            ) : (
+              <button onClick={() => toast.success("Added to order")} className="bg-gradient-brand text-white text-sm font-semibold rounded-full px-4 py-2 inline-flex items-center gap-2 shadow-soft hover:opacity-95 focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
+                <Plus className="w-4 h-4" /> Add to Order
+              </button>
+            )}
           </div>
         </div>
 
