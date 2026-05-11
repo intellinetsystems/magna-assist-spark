@@ -1,4 +1,4 @@
-import hostBg from "@/assets/mahindra-host-bg.jpg";
+import hostBg from "@/assets/home-bg.png";
 
 export function MockHostPage() {
   return (
