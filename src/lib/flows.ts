@@ -41,6 +41,10 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "quick-ref-series"; category: string }
   | { id: string; role: "bot"; type: "quick-ref-submodel"; category: string; series: string }
   | { id: string; role: "bot"; type: "quick-ref-list"; category: string; series: string; submodel?: string; items: PartItem[] }
+  | { id: string; role: "bot"; type: "find-series" }
+  | { id: string; role: "bot"; type: "find-model"; series: string }
+  | { id: string; role: "bot"; type: "find-aggregate"; series: string; model: string }
+  | { id: string; role: "bot"; type: "find-assembly"; series: string; model: string; aggregate: string }
   | { id: string; role: "bot"; type: "no-results"; query: string };
 
 export type FlowStep = { delay?: number; message: ChatMessage };
