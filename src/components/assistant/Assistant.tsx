@@ -773,7 +773,7 @@ export function Assistant() {
   );
 }
 
-function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin }: {
+function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, onClose, onNewChat, showMax, showMin, hideBrand, onQuickAction }: {
   listening: boolean;
   quickOpen: boolean;
   setQuickOpen: (v: boolean) => void;
@@ -783,14 +783,18 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
   onNewChat: () => void;
   showMax?: boolean;
   showMin?: boolean;
+  hideBrand?: boolean;
+  onQuickAction?: (label: string) => void;
 }) {
   return (
     <div className="relative h-14 px-3 border-b border-black/5 flex items-center gap-2 bg-white/80 backdrop-blur">
-      <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
-        <Zap className="w-4 h-4 text-white" fill="currentColor" />
-      </div>
+      {!hideBrand && (
+        <div className="w-8 h-8 rounded-lg bg-gradient-brand flex items-center justify-center shadow-soft shrink-0">
+          <Zap className="w-4 h-4 text-white" fill="currentColor" />
+        </div>
+      )}
       <div className="min-w-0 flex-1">
-        <div className="text-[13px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI</div>
+        {!hideBrand && <div className="text-[13px] font-bold text-[var(--brand-600)] leading-tight truncate">MAgNA AI</div>}
         <div className="text-[10px] text-[var(--ink-500)] leading-tight flex items-center gap-1">
           <span className={`w-1.5 h-1.5 rounded-full ${listening ? "bg-emerald-500 animate-pulse" : "bg-emerald-400"}`} />
           {listening ? "Listening…" : "Online"}
