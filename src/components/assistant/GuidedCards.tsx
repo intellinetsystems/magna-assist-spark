@@ -62,17 +62,42 @@ function Chip({ label, onClick, active }: { label: string; onClick: () => void; 
   );
 }
 
-export function ModelPickerCard({ onSubmit }: { onSubmit: (model: string) => void }) {
+export function AttachmentPickerCard({ onSubmit }: { onSubmit: (attachment: string) => void }) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-3">Attachment Category</div>
+        <div className="grid grid-cols-2 gap-1.5">
+          {attachmentCategories.map((a) => (
+            <button
+              key={a}
+              onClick={() => onSubmit(a)}
+              className="text-left text-xs px-3 py-2.5 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between"
+            >
+              <span className="truncate font-medium">{a}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function ModelPickerCard({ attachment, onSubmit }: { attachment?: string; onSubmit: (model: string) => void }) {
   const [value, setValue] = useState("");
   const [showMore, setShowMore] = useState(false);
+  const filtered = attachment ? (modelsByAttachment[attachment] ?? popularModels) : popularModels;
   const submit = (m: string) => onSubmit(m.trim());
   return (
     <BotShell>
       <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
-        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">Vehicle Model</div>
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-2">
+          {attachment ? `${attachment} — Vehicle Model` : "Vehicle Model"}
+        </div>
         <VoiceInput value={value} onChange={setValue} placeholder="Search model or speak…" onSubmit={() => value && submit(value)} />
         <div className="flex flex-wrap gap-2 mt-3">
-          {popularModels.map((m) => <Chip key={m} label={m} onClick={() => submit(m)} />)}
+          {filtered.map((m) => <Chip key={m} label={m} onClick={() => submit(m)} />)}
         </div>
         <button onClick={() => setShowMore((v) => !v)} className="text-xs text-[var(--brand-600)] font-medium mt-3 inline-flex items-center gap-1 hover:underline">
           {showMore ? "Hide" : "More models…"} <ChevronDown className={`w-3 h-3 transition ${showMore ? "rotate-180" : ""}`} />
@@ -86,6 +111,30 @@ export function ModelPickerCard({ onSubmit }: { onSubmit: (model: string) => voi
             </motion.div>
           )}
         </AnimatePresence>
+      </div>
+    </BotShell>
+  );
+}
+
+export function AssemblyPickerCard({ model, variant, onSubmit }: { model: string; variant: string; onSubmit: (figure: string, label: string) => void }) {
+  const list = assembliesByVariant[variant] ?? defaultAssemblies;
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">Assembly / Figure</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">{model} <span className="text-[var(--ink-300)]">/</span> {variant}</div>
+        <div className="space-y-1.5">
+          {list.map((a) => (
+            <button
+              key={a.figure}
+              onClick={() => onSubmit(a.figure, a.label)}
+              className="w-full text-left text-xs px-3 py-2.5 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between gap-2"
+            >
+              <span className="truncate font-medium">{a.label}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
       </div>
     </BotShell>
   );
