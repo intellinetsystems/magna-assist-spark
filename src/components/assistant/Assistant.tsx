@@ -160,6 +160,31 @@ export function Assistant() {
       }
     }
 
+    // Description-based lookup — short keyword like "valve", "hex nut", "hydraulic adapter".
+    // If unique → jump straight to detail. If multiple → ask model/variant hierarchy first.
+    const descKeyword = /\b(valve|adapter|fitting|hex\s*nut|hex\s*head|cap\s*screw|screw|lockwasher|washer|hydraulic|backhoe)\b/i;
+    if (descKeyword.test(text) && !/order|ticket|eta|track|missing|wrong|filter|key/i.test(text)) {
+      const items = searchParts(text, "", "");
+      if (items.length === 1) {
+        const part = items[0];
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Found it — **${part.partNo}** (${part.description}) from **${part.model} / ${part.variant}**, assembly *${part.assembly}*.` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
+        }, 900);
+        return;
+      }
+      if (items.length > 1) {
+        partFlowRef.current = { query: text };
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `I found **${items.length}** parts matching "${text}". To pinpoint the right one, which **vehicle model** is this for?` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "model-picker" }), 300);
+        }, 800);
+        return;
+      }
+    }
+
     const trigger = flowTriggers.find((t) => t.match.test(text));
     const flow = trigger?.flow ?? "create-ticket";
     setTimeout(() => runFlow(flow), 200);
