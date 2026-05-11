@@ -390,11 +390,16 @@ export function Assistant() {
     if (m.type === "assembly-picker") return <AssemblyPickerCard key={m.id} model={m.model} variant={m.variant} onSubmit={onAssemblyPick} />;
     if (m.type === "part-query") return <PartQueryCard key={m.id} model={m.model} variant={m.variant} onSubmit={onPartQuery} />;
     if (m.type === "result-list") return <ResultListCard key={m.id} items={m.items} query={m.query} model={m.model} variant={m.variant} onSelect={onResultSelect} />;
-    if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} />;
+    if (m.type === "part-detail") return <PartDetailCard key={m.id} part={m.part} onCreateTicket={onPartCreateTicket} />;
     if (m.type === "order-header") return <OrderHeaderCard key={m.id} orderId={m.orderId} placed={m.placed} items={m.items} total={m.total} />;
     if (m.type === "eta-pending") return <EtaPendingCard key={m.id} orderId={m.orderId} onCreateTicket={onCreateTicketEta} onCheckLater={onCheckLater} />;
     if (m.type === "accessory-picker") return <AccessoryPickerCard key={m.id} kind={m.kind} onPick={onAccessoryPick} />;
     if (m.type === "accessory-list") return <AccessoryListCard key={m.id} kind={m.kind} series={m.series} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "quick-ref-picker") return <QuickRefPickerCard key={m.id} onPick={onQuickRefPick} />;
+    if (m.type === "quick-ref-series") return <QuickRefSeriesCard key={m.id} category={m.category} onPick={onQuickRefSeries} />;
+    if (m.type === "quick-ref-submodel") return <QuickRefSubmodelCard key={m.id} category={m.category} series={m.series} onPick={onQuickRefSubmodel} />;
+    if (m.type === "quick-ref-list") return <QuickRefListCard key={m.id} category={m.category} series={m.series} submodel={m.submodel} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
     return null;
   };
 
