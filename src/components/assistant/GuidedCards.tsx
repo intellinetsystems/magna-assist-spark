@@ -626,7 +626,7 @@ export function TrackingCardEx({ orderId, eta, carrier = "FedEx", status, partNo
     { label: "Out for Delivery", time: isInTransit ? "Pending" : "Today · 7:45 AM", state: isInTransit ? "pending" as const : "current" as const },
     { label: "Delivered", time: "Pending", state: "pending" as const },
   ];
-  const [notify, setNotify] = useState(false);
+  
   return (
     <BotShell>
       <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
