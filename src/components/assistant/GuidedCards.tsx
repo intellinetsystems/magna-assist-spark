@@ -919,3 +919,81 @@ export function NoResultsCard({ query, onCreateTicket }: { query: string; onCrea
     </BotShell>
   );
 }
+
+export function FindSeriesCard({ onPick }: { onPick: (series: string) => void }) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">Find a Part</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Step 1 · Choose a Series</div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {findSeries.map((s) => (
+            <button key={s} onClick={() => onPick(s)} className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between">
+              <span className="truncate font-medium">{s}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function FindModelCard({ series, onPick }: { series: string; onPick: (model: string) => void }) {
+  const list = findModelsBySeries[series] ?? ["4500 2WD"];
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">Find a Part → {series}</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Step 2 · Choose a Model</div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-56 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((m) => (
+            <button key={m} onClick={() => onPick(m)} className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between">
+              <span className="truncate font-medium">{m}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function FindAggregateCard({ series, model, onPick }: { series: string; model: string; onPick: (aggregate: string) => void }) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">{series} → {model}</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Step 3 · Choose an Aggregate</div>
+        <div className="grid grid-cols-2 gap-1.5 max-h-64 overflow-y-auto scrollbar-thin pr-1">
+          {findAggregates.map((a) => (
+            <button key={a} onClick={() => onPick(a)} className="text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between">
+              <span className="truncate font-medium">{a}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function FindAssemblyCard({ series, model, aggregate, onPick }: { series: string; model: string; aggregate: string; onPick: (assembly: string) => void }) {
+  const list = findAssembliesByAggregate[aggregate] ?? ["Main Assembly"];
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-xs uppercase tracking-wider text-[var(--ink-500)] font-semibold mb-1">{series} → {model} → {aggregate}</div>
+        <div className="text-[11px] text-[var(--ink-500)] mb-3">Step 4 · Choose an Assembly (Illustration)</div>
+        <div className="space-y-1.5 max-h-64 overflow-y-auto scrollbar-thin pr-1">
+          {list.map((a) => (
+            <button key={a} onClick={() => onPick(a)} className="w-full text-left text-xs px-3 py-2 rounded-xl border border-black/5 hover:bg-[var(--brand-50)] hover:border-[var(--brand-200)] hover:text-[var(--brand-700)] transition flex items-center justify-between">
+              <span className="truncate font-medium">{a}</span>
+              <ChevronRight className="w-3 h-3 text-[var(--ink-500)] shrink-0" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </BotShell>
+  );
+}
