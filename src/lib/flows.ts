@@ -94,9 +94,10 @@ export const modelsByAttachment: Record<string, string[]> = {
   "Backhoe": ["1526 Backhoe", "Max 26XLT", "2638 HST"],
   "Loader": ["1526 Backhoe", "4540 4WD", "6075 PST", "eMax 20S HST"],
   "Mower": ["eMax 20S HST", "Max 26XLT"],
-  "Implements": ["4540 4WD", "6075 PST", "9125 S"],
+  "Implements": ["4500 2WD", "4540 4WD", "6075 PST", "9125 S"],
   "Hay Tools & Equipment": ["6075 PST", "9125 S"],
   "New Implements": ["1526 Backhoe", "Max 26XLT", "4540 4WD"],
+  "Swinging Drawbar": ["4500 2WD"],
 };
 
 // Available assembly figures per (model + variant). Default keyed by variant.
@@ -109,6 +110,9 @@ export const assembliesByVariant: Record<string, { figure: string; label: string
   "1526L": [
     { figure: "1526L - FIG 002", label: "Loader Frame & Hardware (FIG 002)" },
     { figure: "1526L - FIG 003", label: "Loader Hydraulic Lines (FIG 003)" },
+  ],
+  "4500 2WD": [
+    { figure: "4500-2WD - DRAWBAR", label: "Swinging Drawbar Attachment (00 Series)" },
   ],
 };
 export const defaultAssemblies: { figure: string; label: string }[] = [
