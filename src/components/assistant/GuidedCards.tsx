@@ -497,21 +497,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
           </div>
         </div>
 
-        {/* Alternates */}
-        <div className="mt-4">
-          <div className="text-xs font-semibold text-[var(--ink-700)] mb-2">Alternate parts customers also ordered</div>
-          <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
-            {alternates.map((a, i) => (
-              <div key={a.partNo} className="shrink-0 w-40 rounded-xl border border-black/5 bg-white p-2 hover:border-[var(--brand-200)] transition">
-                <div className="aspect-square rounded-lg bg-[var(--surface-1)] border border-black/5 mb-1.5 overflow-hidden"><PartThumb seed={i + 3} /></div>
-                <div className="font-mono text-[11px] font-semibold text-[var(--brand-600)] truncate">{a.partNo}</div>
-                <div className="mt-0.5">
-                  <span className="text-[11px] text-[var(--ink-900)] font-semibold">${a.mrp.toFixed(2)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
 
       {/* Exploded modal */}
