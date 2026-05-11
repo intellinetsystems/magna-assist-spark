@@ -204,21 +204,26 @@ export const buildFilters = (series: string) => buildQuickRefItems("FILTER LIST"
 export const buildKeys = (series: string) => buildQuickRefItems("KEY LIST", series);
 
 export function partsByFigure(figure: string): PartItem[] {
-  const items = sampleParts.filter((p) => p.figure === figure);
+  const items = allCatalogParts.filter((p) => p.figure === figure);
   return items.length ? items : sampleParts;
 }
 
 export function searchParts(query: string, model: string, variant: string): PartItem[] {
   const q = query.trim().toLowerCase();
   // Exact part-no match returns 1
-  const exact = sampleParts.find((p) => p.partNo.toLowerCase() === q);
+  const exact = allCatalogParts.find((p) => p.partNo.toLowerCase() === q);
   if (exact) return [exact];
   // Description / category contains
-  const matches = sampleParts.filter(
+  const matches = allCatalogParts.filter(
     (p) => p.description.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.partNo.toLowerCase().includes(q)
   );
   if (matches.length) return matches;
   return sampleParts.map((p) => ({ ...p, model: model || p.model, variant: variant || p.variant }));
+}
+
+// Look up a single part by partNo across the entire mock catalogue.
+export function findPart(partNo: string): PartItem | undefined {
+  return allCatalogParts.find((p) => p.partNo.toLowerCase() === partNo.toLowerCase());
 }
 
 export type FlowKey =
