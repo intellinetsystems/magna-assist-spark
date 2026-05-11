@@ -411,6 +411,7 @@ export function Assistant() {
                 onMaximize={() => setMode("panel")}
                 onMinimize={() => setMode("panel")}
                 onClose={() => setConfirmClose(true)}
+                onNewChat={newChat}
                 showMin
               />
               <Thread
