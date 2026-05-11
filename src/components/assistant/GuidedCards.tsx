@@ -432,7 +432,7 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
           <div className="@[520px]:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
             <div className="flex items-center justify-between mb-1">
               <div className="text-xs font-semibold text-[var(--ink-700)]">
-                {part.category === "Filters" ? "Product Image" : part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
+                {part.isQuickRef || part.category === "Filters" || part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={() => setExploded(true)} aria-label="Zoom" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
@@ -444,16 +444,25 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
               </div>
             </div>
             <div className="aspect-[4/3] @[520px]:aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
-              {part.category === "Filters" ? (
+              {part.isQuickRef ? (
+                <img
+                  src={/key/i.test(part.category) || /key/i.test(part.description) ? keyImg : filterImg}
+                  alt={`${part.description} product image`}
+                  loading="lazy" width={768} height={512}
+                  className="w-full h-full object-contain p-3"
+                />
+              ) : part.category === "Filters" ? (
                 <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
               ) : part.category === "Keys" ? (
                 <img src={keyImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
               ) : (
                 <AssemblyDiagram highlightId={part.refNo} />
               )}
-              <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
-                #{part.refNo} — {part.partNo}
-              </div>
+              {!part.isQuickRef && (
+                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
+                  #{part.refNo} — {part.partNo}
+                </div>
+              )}
             </div>
           </div>
 
