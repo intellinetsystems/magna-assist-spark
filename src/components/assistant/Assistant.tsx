@@ -817,40 +817,8 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
       >
         <MessageSquarePlus className="w-4 h-4" />
       </button>
-      <div className="relative">
-        <button
-          onClick={() => setQuickOpen(!quickOpen)}
-          aria-label="Quick Actions"
-          title="Quick Actions"
-          className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-        <AnimatePresence>
-          {quickOpen && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: -4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: -4 }}
-              className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-soft-lg border border-black/5 p-2 z-[80]"
-            >
-              <div className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Quick Actions</div>
-              {quickActions.map((q) => {
-                const Icon = qaIcons[q.icon];
-                return (
-                  <button
-                    key={q.label}
-                    onClick={() => { setQuickOpen(false); onQuickAction?.(q.label); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
-                  >
-                    <Icon className="w-4 h-4 text-[var(--brand-600)]" /> {q.label}
-                  </button>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <QuickActionsButton quickOpen={quickOpen} setQuickOpen={setQuickOpen} onQuickAction={onQuickAction} />
+
       {/* Window controls */}
       <div className="flex items-center gap-0.5 pl-1 ml-1 border-l border-black/5">
         {showMax && (
