@@ -144,6 +144,22 @@ export function Assistant() {
     if (!text) return;
     pushMessage({ id: newId(), role: "user", type: "text", text });
     setInput("");
+
+    // Direct part-number lookup — skip the model/variant flow when an exact part no is provided.
+    const partMatch = text.match(/KMW[A-Z0-9]+/i);
+    if (partMatch) {
+      const items = searchParts(partMatch[0], "", "");
+      if (items.length >= 1 && items[0].partNo.toLowerCase() === partMatch[0].toLowerCase()) {
+        const part = items[0];
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Found it — **${part.partNo}** (${part.description}) from **${part.model} / ${part.variant}**, assembly *${part.assembly}*.` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
+        }, 900);
+        return;
+      }
+    }
+
     const trigger = flowTriggers.find((t) => t.match.test(text));
     const flow = trigger?.flow ?? "create-ticket";
     setTimeout(() => runFlow(flow), 200);
