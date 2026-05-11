@@ -8,7 +8,7 @@ import {
 import { Waveform } from "./Waveform";
 import {
   ChatMessage, FlowKey, buildFlow, buildEtaAvailable, buildCreateTicketFromEta,
-  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, partsByFigure, type PartItem,
+  flowTriggers, newId, suggestions, quickActions, searchParts, buildFilters, buildKeys, buildQuickRefItems, partsByFigure, quickRefSubmodels, type PartItem,
 } from "@/lib/flows";
 import {
   UserBubble, BotText, TypingBubble, PriorityCard, TicketCard,
