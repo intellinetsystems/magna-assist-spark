@@ -568,7 +568,7 @@ export function OrderHeaderCard({ orderId, placed, items, total }: {
   );
 }
 
-export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater, partNos }: {
+export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater }: {
   orderId: string; onCreateTicket: () => void; onCheckLater: () => void; partNos?: string[];
 }) {
   return (
@@ -579,29 +579,36 @@ export function EtaPendingCard({ orderId, onCreateTicket, onCheckLater, partNos 
             <Clock className="w-5 h-5 text-amber-600" />
           </div>
           <div className="flex-1">
-            <div className="font-semibold text-[var(--ink-900)] text-sm flex items-center gap-1.5">
-              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> ETA not available yet
-            </div>
-            <p className="text-xs text-[var(--ink-500)] mt-1 leading-relaxed">
-              This usually happens when the shipment was just dispatched and the carrier hasn't synced tracking info for order <span className="font-mono text-[var(--brand-600)]">#{orderId}</span>.
-            </p>
-            {partNos && partNos.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {partNos.map((p) => (
-                  <span key={p} className="font-mono text-[10px] px-1.5 py-0.5 rounded bg-[var(--surface-2)] text-[var(--ink-700)]">{p}</span>
-                ))}
-              </div>
-            )}
-            <div className="text-[11px] text-[var(--ink-700)] mt-3 font-medium">Would you like me to escalate this to support?</div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              <button onClick={onCreateTicket} className="bg-emerald-600 text-white text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 shadow-soft hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Yes, create ticket
+            <div className="font-semibold text-[var(--ink-900)] text-sm">ETA not available</div>
+            <p className="text-xs text-[var(--ink-500)] mt-1">Order <span className="font-mono text-[var(--brand-600)]">#{orderId}</span> — would you like to raise a ticket for the same?</p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              <button onClick={onCreateTicket} className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2">
+                Yes
               </button>
-              <button onClick={onCheckLater} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-3.5 py-2 rounded-full inline-flex items-center gap-1.5 hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
-                <X className="w-3.5 h-3.5" /> No
+              <button onClick={onCheckLater} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-4 py-2 rounded-full hover:bg-[var(--surface-2)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)] focus:ring-offset-2">
+                No
               </button>
             </div>
           </div>
+        </div>
+      </div>
+    </BotShell>
+  );
+}
+
+export function OrderConfirmCard({ orderId, placed, parts, onYes, onNo }: {
+  orderId: string; placed: string; parts: number; onYes: () => void; onNo: () => void;
+}) {
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-md">
+        <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Last Order</div>
+        <div className="font-mono font-bold text-[var(--brand-600)] text-base mt-0.5">#{orderId}</div>
+        <div className="text-xs text-[var(--ink-700)] mt-1">Placed on <strong>{placed}</strong> · <strong>{parts}</strong> parts</div>
+        <div className="text-[12px] text-[var(--ink-700)] mt-3 font-medium">Is this the order you are referring to?</div>
+        <div className="flex gap-2 mt-2">
+          <button onClick={onYes} className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-emerald-700">Yes</button>
+          <button onClick={onNo} className="bg-white text-[var(--ink-700)] border border-black/10 text-xs font-semibold px-4 py-2 rounded-full hover:bg-[var(--surface-2)]">No</button>
         </div>
       </div>
     </BotShell>
