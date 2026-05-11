@@ -333,7 +333,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
 
   return (
     <BotShell>
-      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-5 shadow-soft w-full max-w-3xl">
+      <div className="@container bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-5 shadow-soft w-full max-w-3xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0 flex-1">
