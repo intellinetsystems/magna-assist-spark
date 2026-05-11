@@ -415,6 +415,16 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
           </div>
         </div>
 
+        {/* AI search tags */}
+        {part.searchTags && part.searchTags.length > 0 && (
+          <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold mr-1">AI tags</span>
+            {part.searchTags.map((t) => (
+              <span key={t} className="px-2 py-0.5 rounded-full bg-[var(--brand-50)] text-[var(--brand-700)] border border-[var(--brand-200)] text-[10px] font-medium">{t}</span>
+            ))}
+          </div>
+        )}
+
         {/* Specs */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2 mt-4 text-xs">
           {[
