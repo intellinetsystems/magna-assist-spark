@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
@@ -18,6 +19,7 @@ import {
   PartDetailCard, OrderHeaderCard, EtaPendingCard, OrderConfirmCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
+  FindSeriesCard, FindModelCard, FindAggregateCard, FindAssemblyCard,
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
@@ -473,7 +475,57 @@ export function Assistant() {
     }, 250);
   }, []);
 
-  // Out-of-stock → ticket
+  // Find a Part: Series → Model → Aggregate → Assembly
+  const findRef = useRef<{ series?: string; model?: string; aggregate?: string }>({});
+  const onFindSeries = useCallback((series: string) => {
+    findRef.current = { series };
+    pushMessage({ id: newId(), role: "user", type: "text", text: series });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${series}** — now pick a **Model**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-model", series }), 300);
+    }, 250);
+  }, []);
+  const onFindModel = useCallback((model: string) => {
+    const series = findRef.current.series ?? "";
+    findRef.current.model = model;
+    pushMessage({ id: newId(), role: "user", type: "text", text: model });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${series} → ${model}** — choose an **Aggregate**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-aggregate", series, model }), 300);
+    }, 250);
+  }, []);
+  const onFindAggregate = useCallback((aggregate: string) => {
+    const series = findRef.current.series ?? "";
+    const model = findRef.current.model ?? "";
+    findRef.current.aggregate = aggregate;
+    pushMessage({ id: newId(), role: "user", type: "text", text: aggregate });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${aggregate}** — pick the **Assembly / Illustration**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "find-assembly", series, model, aggregate }), 300);
+    }, 250);
+  }, []);
+  const onFindAssembly = useCallback((assembly: string) => {
+    const { series = "", model = "", aggregate = "" } = findRef.current;
+    pushMessage({ id: newId(), role: "user", type: "text", text: assembly });
+    // Special: 00 Series → 4500 2WD → Attachments → Swinging Drawbar Attachment shows the illustration
+    if (/swinging\s*drawbar/i.test(assembly) && /4500\s*2WD/i.test(model)) {
+      const part = findPart("E007900403C11");
+      if (part) {
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 200);
+        setTimeout(() => {
+          pushMessage({ id: newId(), role: "bot", type: "text", text: `Here is **${assembly}** for **${series} → ${model}**. The highlighted component is **ASSLY PLATE DRAWBAR SUPPORT RH**.` });
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "part-detail", part }), 300);
+        }, 900);
+        return;
+      }
+    }
+    setTimeout(() => {
+      const items = buildQuickRefItems(aggregate, series, model);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Parts in **${series} → ${model} → ${aggregate} → ${assembly}**:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "quick-ref-list", category: aggregate, series, submodel: model, items }), 300);
+    }, 250);
+  }, []);
+
   const onPartCreateTicket = useCallback((p: PartItem) => {
     pushMessage({ id: newId(), role: "user", type: "text", text: `Create a ticket — ${p.partNo} is out of stock` });
     setTimeout(() => {
@@ -577,6 +629,10 @@ export function Assistant() {
     if (m.type === "quick-ref-series") return <QuickRefSeriesCard key={m.id} category={m.category} onPick={onQuickRefSeries} />;
     if (m.type === "quick-ref-submodel") return <QuickRefSubmodelCard key={m.id} category={m.category} series={m.series} onPick={onQuickRefSubmodel} />;
     if (m.type === "quick-ref-list") return <QuickRefListCard key={m.id} category={m.category} series={m.series} submodel={m.submodel} items={m.items} onSelect={onResultSelect} />;
+    if (m.type === "find-series") return <FindSeriesCard key={m.id} onPick={onFindSeries} />;
+    if (m.type === "find-model") return <FindModelCard key={m.id} series={m.series} onPick={onFindModel} />;
+    if (m.type === "find-aggregate") return <FindAggregateCard key={m.id} series={m.series} model={m.model} onPick={onFindAggregate} />;
+    if (m.type === "find-assembly") return <FindAssemblyCard key={m.id} series={m.series} model={m.model} aggregate={m.aggregate} onPick={onFindAssembly} />;
     if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
     return null;
   };
@@ -816,40 +872,8 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
       >
         <MessageSquarePlus className="w-4 h-4" />
       </button>
-      <div className="relative">
-        <button
-          onClick={() => setQuickOpen(!quickOpen)}
-          aria-label="Quick Actions"
-          title="Quick Actions"
-          className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
-        >
-          <RefreshCw className="w-4 h-4" />
-        </button>
-        <AnimatePresence>
-          {quickOpen && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.96, y: -4 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.96, y: -4 }}
-              className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-soft-lg border border-black/5 p-2 z-[80]"
-            >
-              <div className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Quick Actions</div>
-              {quickActions.map((q) => {
-                const Icon = qaIcons[q.icon];
-                return (
-                  <button
-                    key={q.label}
-                    onClick={() => { setQuickOpen(false); onQuickAction?.(q.label); }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
-                  >
-                    <Icon className="w-4 h-4 text-[var(--brand-600)]" /> {q.label}
-                  </button>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+      <QuickActionsButton quickOpen={quickOpen} setQuickOpen={setQuickOpen} onQuickAction={onQuickAction} />
+
       {/* Window controls */}
       <div className="flex items-center gap-0.5 pl-1 ml-1 border-l border-black/5">
         {showMax && (
@@ -922,6 +946,76 @@ function Thread({ messages, transcriptOpen, setTranscriptOpen, onSuggestion, ren
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+function QuickActionsButton({ quickOpen, setQuickOpen, onQuickAction }: {
+  quickOpen: boolean;
+  setQuickOpen: (v: boolean) => void;
+  onQuickAction?: (label: string) => void;
+}) {
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    if (!quickOpen) return;
+    const update = () => {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (r) setPos({ top: r.bottom + 8, left: r.right - 224 });
+    };
+    update();
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+    const onClick = (e: MouseEvent) => {
+      if (btnRef.current && !btnRef.current.contains(e.target as Node)) {
+        const panel = document.getElementById("qa-portal-panel");
+        if (panel && !panel.contains(e.target as Node)) setQuickOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, [quickOpen, setQuickOpen]);
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={() => setQuickOpen(!quickOpen)}
+        aria-label="Quick Actions"
+        title="Quick Actions"
+        className="p-1.5 rounded-lg text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:bg-[var(--brand-50)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-500)]"
+      >
+        <RefreshCw className="w-4 h-4" />
+      </button>
+      {quickOpen && pos && createPortal(
+        <motion.div
+          id="qa-portal-panel"
+          initial={{ opacity: 0, scale: 0.96, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          style={{ position: "fixed", top: pos.top, left: Math.max(8, pos.left), zIndex: 9999 }}
+          className="w-56 bg-white rounded-2xl shadow-soft-lg border border-black/5 p-2"
+        >
+          <div className="px-2 pt-1 pb-2 text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-semibold">Quick Actions</div>
+          {quickActions.map((q) => {
+            const Icon = qaIcons[q.icon];
+            return (
+              <button
+                key={q.label}
+                onClick={() => { setQuickOpen(false); onQuickAction?.(q.label); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-[var(--ink-700)] hover:bg-[var(--brand-50)]"
+              >
+                <Icon className="w-4 h-4 text-[var(--brand-600)]" /> {q.label}
+              </button>
+            );
+          })}
+        </motion.div>,
+        document.body
+      )}
+    </>
   );
 }
 
