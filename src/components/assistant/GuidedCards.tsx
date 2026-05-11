@@ -356,7 +356,8 @@ function _LegacyAssemblyDiagramSVG({ highlightId = 9 }: { highlightId?: number }
   );
 }
 
-export function PartDetailCard({ part }: { part: PartItem }) {
+export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCreateTicket?: (part: PartItem) => void }) {
+  const outOfStock = part.inStock <= 0;
   const [exploded, setExploded] = useState(false);
   const [video, setVideo] = useState(false);
   const attachments = [
