@@ -371,10 +371,6 @@ export function PartDetailCard({ part, onCreateTicket }: { part: PartItem; onCre
     { type: "3d", icon: Box, name: "Model.glb", size: "3.2 MB", color: "text-indigo-600 bg-indigo-50", action: "View 3D" },
     { type: "image", icon: ImageIcon, name: "Hi-res_Photos", size: "4 images", color: "text-amber-600 bg-amber-50", action: "Preview" },
   ];
-  const alternates = [
-    { partNo: "KMW05863108408", mrp: 27.95 }, { partNo: "KMW05862408508", mrp: 25.50 },
-    { partNo: "KMW05863106406", mrp: 15.40 }, { partNo: "KMW05861106406", mrp: 21.50 },
-  ];
 
   return (
     <BotShell>
