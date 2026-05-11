@@ -721,6 +721,8 @@ export function Assistant() {
                 onClose={() => setConfirmClose(true)}
                 onNewChat={newChat}
                 showMin
+                hideBrand
+                onQuickAction={handleSuggestion}
               />
               <Thread
                 messages={messages}
