@@ -358,9 +358,9 @@ export function PartDetailCard({ part }: { part: PartItem }) {
               </div>
             </div>
             <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden">
-              <AssemblyDiagram highlightId={7} />
+              <AssemblyDiagram highlightId={part.refNo} />
               <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
-                #7 — {part.partNo}
+                #{part.refNo} — {part.partNo}
               </div>
             </div>
           </div>
