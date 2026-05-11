@@ -8,6 +8,8 @@ import {
 import { BotShell } from "./MessageBubbles";
 import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, buildFilters, buildKeys, type PartItem } from "@/lib/flows";
 import { toast } from "sonner";
+import filterImg from "@/assets/accessory-filter.jpg";
+import keyImg from "@/assets/accessory-key.jpg";
 
 function VoiceInput({ value, onChange, placeholder, onSubmit }: {
   value: string; onChange: (v: string) => void; placeholder: string; onSubmit: () => void;
@@ -347,9 +349,11 @@ export function PartDetailCard({ part }: { part: PartItem }) {
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 mt-4">
           <div className="md:col-span-3 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3 relative">
             <div className="flex items-center justify-between mb-1">
-              <div className="text-xs font-semibold text-[var(--ink-700)]">Assembly Illustration</div>
+              <div className="text-xs font-semibold text-[var(--ink-700)]">
+                {part.category === "Filters" ? "Product Image" : part.category === "Keys" ? "Product Image" : "Assembly Illustration"}
+              </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setExploded(true)} aria-label="Exploded view" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
+                <button onClick={() => setExploded(true)} aria-label="Zoom" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
                   <ZoomIn className="w-3.5 h-3.5 text-[var(--ink-700)]" />
                 </button>
                 <button aria-label="Reset view" className="p-1.5 rounded-lg hover:bg-white border border-transparent hover:border-black/5">
@@ -357,8 +361,14 @@ export function PartDetailCard({ part }: { part: PartItem }) {
                 </button>
               </div>
             </div>
-            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden">
-              <AssemblyDiagram highlightId={part.refNo} />
+            <div className="aspect-[16/10] bg-white rounded-xl border border-black/5 relative overflow-hidden flex items-center justify-center">
+              {part.category === "Filters" ? (
+                <img src={filterImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
+              ) : part.category === "Keys" ? (
+                <img src={keyImg} alt={`${part.description} product image`} loading="lazy" width={768} height={512} className="w-full h-full object-contain p-3" />
+              ) : (
+                <AssemblyDiagram highlightId={part.refNo} />
+              )}
               <div className="absolute bottom-2 left-2 px-2 py-1 rounded-full bg-[var(--brand-600)] text-white text-[10px] font-mono font-semibold shadow-soft">
                 #{part.refNo} — {part.partNo}
               </div>
@@ -420,9 +430,21 @@ export function PartDetailCard({ part }: { part: PartItem }) {
             <motion.div initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
               className="bg-white rounded-3xl p-6 max-w-4xl w-full shadow-soft-lg relative" onClick={(e) => e.stopPropagation()}>
               <button onClick={() => setExploded(false)} aria-label="Close" className="absolute top-3 right-3 p-2 rounded-full hover:bg-[var(--surface-2)]"><X className="w-4 h-4" /></button>
-              <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">Exploded View — {part.assembly}</div>
-              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5"><AssemblyDiagram highlightId={part.refNo} /></div>
-              <p className="text-xs text-[var(--ink-500)] mt-3">Click any callout to navigate · Pinch / scroll to zoom</p>
+              <div className="text-sm font-semibold text-[var(--ink-900)] mb-3">
+                {part.category === "Filters" || part.category === "Keys" ? `Product Image — ${part.description}` : `Exploded View — ${part.assembly}`}
+              </div>
+              <div className="aspect-video bg-[var(--surface-1)] rounded-2xl border border-black/5 flex items-center justify-center overflow-hidden">
+                {part.category === "Filters" ? (
+                  <img src={filterImg} alt={part.description} className="max-h-full max-w-full object-contain" />
+                ) : part.category === "Keys" ? (
+                  <img src={keyImg} alt={part.description} className="max-h-full max-w-full object-contain" />
+                ) : (
+                  <AssemblyDiagram highlightId={part.refNo} />
+                )}
+              </div>
+              <p className="text-xs text-[var(--ink-500)] mt-3">
+                {part.category === "Filters" || part.category === "Keys" ? "Reference image — actual product may vary slightly." : "Click any callout to navigate · Pinch / scroll to zoom"}
+              </p>
             </motion.div>
           </div>
         )}
