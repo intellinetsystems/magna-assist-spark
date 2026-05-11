@@ -199,39 +199,91 @@ export function ResultListCard({ items, query, model, variant, onSelect }: {
   );
 }
 
-function AssemblyDiagram({ highlightId = 7 }: { highlightId?: number }) {
-  const callouts = [
-    { id: 1, x: 80, y: 60 }, { id: 2, x: 140, y: 50 }, { id: 3, x: 200, y: 70 },
-    { id: 4, x: 260, y: 90 }, { id: 5, x: 100, y: 140 }, { id: 6, x: 180, y: 160 },
-    { id: 7, x: 230, y: 130 }, { id: 8, x: 290, y: 170 },
-  ];
+function AssemblyDiagram({ highlightId = 9 }: { highlightId?: number }) {
+  // Backhoe Valve, Fittings & Hardware (1526B - FIG 008) — manifold w/ adapter callouts.
+  // 10 callouts arranged to match the reference illustration.
+  const callouts: Record<number, { x: number; y: number }> = {
+    1: { x: 280, y: 70 },   // valve top section
+    2: { x: 158, y: 138 },  // adapter mid-left
+    3: { x: 320, y: 38 },   // hex cap screw top
+    5: { x: 88, y: 52 },    // hex nut top-left
+    6: { x: 110, y: 100 },  // 90° adapter (left)
+    7: { x: 250, y: 268 },  // bottom adapter
+    8: { x: 410, y: 252 },  // bottom-right tee
+    9: { x: 70, y: 188 },   // HIGHLIGHT — KMW05863406506
+    10:{ x: 65, y: 30 },    // washer
+  };
+  const Box = ({ id }: { id: number }) => {
+    const c = callouts[id];
+    if (!c) return null;
+    const active = id === highlightId;
+    return (
+      <g>
+        <rect
+          x={c.x - 14} y={c.y - 12} width="28" height="24" rx="2"
+          fill={active ? "#FFE4E6" : "#fff"}
+          stroke={active ? "#E11D2E" : "#111827"}
+          strokeWidth={active ? 2.4 : 1.5}
+        >
+          {active && <animate attributeName="stroke-opacity" values="1;0.35;1" dur="1.6s" repeatCount="indefinite" />}
+        </rect>
+        <text x={c.x} y={c.y + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill={active ? "#E11D2E" : "#111827"}>{id}</text>
+      </g>
+    );
+  };
+
   return (
-    <svg viewBox="0 0 360 220" className="w-full h-full">
+    <svg viewBox="0 0 500 320" className="w-full h-full" role="img" aria-label="Backhoe valve assembly illustration">
       <defs>
-        <linearGradient id="diskGrad" x1="0" x2="1"><stop offset="0%" stopColor="#E5E7EB" /><stop offset="100%" stopColor="#9CA3AF" /></linearGradient>
+        <linearGradient id="metalGrad" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#F3F4F6" />
+          <stop offset="100%" stopColor="#D1D5DB" />
+        </linearGradient>
       </defs>
-      {/* hub */}
-      <circle cx="180" cy="110" r="40" fill="url(#diskGrad)" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      <circle cx="180" cy="110" r="14" fill="#fff" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      {/* caliper */}
-      <rect x="210" y="80" width="50" height="60" rx="6" fill="url(#diskGrad)" stroke="#6B7280" strokeWidth="1.5" opacity="0.5" />
-      {/* pads (highlighted) */}
-      <rect x="216" y="88" width="38" height="44" rx="3" fill="#FFE4E6" stroke="#E11D2E" strokeWidth="2">
-        <animate attributeName="stroke-opacity" values="1;0.3;1" dur="1.6s" repeatCount="indefinite" />
-      </rect>
-      {/* hose */}
-      <path d="M260 110 Q310 90 330 60" stroke="#9CA3AF" strokeWidth="2" fill="none" opacity="0.5" />
-      {/* mount */}
-      <rect x="40" y="100" width="60" height="20" rx="3" fill="#E5E7EB" stroke="#6B7280" opacity="0.5" />
-      {callouts.map((c) => {
-        const active = c.id === highlightId;
-        return (
-          <g key={c.id} opacity={active ? 1 : 0.4}>
-            <circle cx={c.x} cy={c.y} r={active ? 11 : 9} fill={active ? "#E11D2E" : "#fff"} stroke={active ? "#E11D2E" : "#6B7280"} strokeWidth="1.5" />
-            <text x={c.x} y={c.y + 3.5} textAnchor="middle" fontSize="10" fontWeight="600" fill={active ? "#fff" : "#374151"}>{c.id}</text>
-          </g>
-        );
-      })}
+
+      {/* Manifold body */}
+      <rect x="170" y="95" width="220" height="90" rx="4" fill="url(#metalGrad)" stroke="#374151" strokeWidth="1.4" />
+      {/* Top spool ports */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <rect key={`t${i}`} x={185 + i * 33} y="80" width="20" height="20" rx="2" fill="#E5E7EB" stroke="#374151" />
+      ))}
+      {/* Front bores (×6) */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <circle key={`b${i}`} cx={195 + i * 33} cy="140" r="9" fill="#fff" stroke="#374151" />
+      ))}
+      {/* Bottom bores (×6) */}
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <circle key={`bb${i}`} cx={195 + i * 33} cy="168" r="6" fill="#fff" stroke="#374151" />
+      ))}
+
+      {/* Highlighted #9 — red 90° adapter at lower-left */}
+      <g>
+        <path d="M125 175 L 125 205 L 95 205 L 95 195 L 75 195 L 75 230" fill="none" stroke="#E11D2E" strokeWidth="6" strokeLinejoin="round">
+          <animate attributeName="stroke-opacity" values="1;0.4;1" dur="1.6s" repeatCount="indefinite" />
+        </path>
+        <circle cx="75" cy="232" r="6" fill="#E11D2E" />
+      </g>
+
+      {/* Other adapters (left 90°, right 90°, bottom adapters) */}
+      <path d="M170 130 L 140 130 L 140 110 L 120 110 L 120 90" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M390 140 L 420 140 L 420 165 L 440 165 L 440 220" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M250 185 L 250 240 L 270 240 L 270 270" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+      <path d="M390 220 L 410 220 L 410 250" fill="none" stroke="#6B7280" strokeWidth="5" strokeLinejoin="round" />
+
+      {/* Cap screws / nuts on top */}
+      <line x1="320" y1="40" x2="320" y2="80" stroke="#6B7280" strokeWidth="2" />
+      <circle cx="90" cy="55" r="5" fill="#9CA3AF" stroke="#374151" />
+
+      {/* Leader lines from callouts to features */}
+      <line x1="280" y1="82" x2="280" y2="100" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="172" y1="138" x2="195" y2="140" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="124" y1="100" x2="140" y2="110" stroke="#9CA3AF" strokeDasharray="3 2" />
+      <line x1="84" y1="190" x2="78" y2="220" stroke="#E11D2E" strokeWidth="1.5" />
+
+      {/* Callout boxes */}
+      {Object.keys(callouts).map((k) => <Box key={k} id={Number(k)} />)}
+
+      <text x="492" y="312" textAnchor="end" fontSize="8" fill="#9CA3AF" fontStyle="italic">COPYRIGHT PROTECTED</text>
     </svg>
   );
 }
