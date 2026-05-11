@@ -10,6 +10,7 @@ import { popularModels, moreModels, variantsByModel, partCategories, accessorySe
 import { toast } from "sonner";
 import filterImg from "@/assets/accessory-filter.jpg";
 import keyImg from "@/assets/accessory-key.jpg";
+import backhoeValveFig from "@/assets/backhoe-valve-fig008.png";
 
 function VoiceInput({ value, onChange, placeholder, onSubmit }: {
   value: string; onChange: (v: string) => void; placeholder: string; onSubmit: () => void;
