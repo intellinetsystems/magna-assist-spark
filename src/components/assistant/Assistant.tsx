@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
-  Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp,
+  Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
