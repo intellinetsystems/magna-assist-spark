@@ -219,6 +219,15 @@ export function Assistant() {
     pushMessage({ id: newId(), role: "bot", type: "text", text: `No problem — I'll re-check at **${t}** and notify you.` });
   }, []);
 
+  const onAccessoryPick = useCallback((kind: "Filter" | "Key", series: string) => {
+    pushMessage({ id: newId(), role: "user", type: "text", text: `${kind} List → ${series}` });
+    setTimeout(() => {
+      const items = kind === "Filter" ? buildFilters(series) : buildKeys(series);
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the **${kind}** items for **${series}** — pick one to see full details:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "accessory-list", kind, series, items }), 300);
+    }, 250);
+  }, []);
+
   function newChat() {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
