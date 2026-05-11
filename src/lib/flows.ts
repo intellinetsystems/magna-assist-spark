@@ -147,6 +147,11 @@ export function buildKeys(series: string): PartItem[] {
   ];
 }
 
+export function partsByFigure(figure: string): PartItem[] {
+  const items = sampleParts.filter((p) => p.figure === figure);
+  return items.length ? items : sampleParts;
+}
+
 export function searchParts(query: string, model: string, variant: string): PartItem[] {
   const q = query.trim().toLowerCase();
   // Exact part-no match returns 1
