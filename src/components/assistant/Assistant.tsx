@@ -19,6 +19,7 @@ import {
   PartDetailCard, OrderHeaderCard, EtaPendingCard, OrderConfirmCard, TrackingCardEx,
   AccessoryPickerCard, AccessoryListCard,
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
+  FindSeriesCard, FindModelCard, FindAggregateCard, FindAssemblyCard,
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
