@@ -95,6 +95,20 @@ export function Assistant() {
   useEffect(() => { try { localStorage.setItem(HISTORY_KEY, JSON.stringify(chatHistory)); } catch { /* ignore */ } }, [chatHistory]);
   useEffect(() => { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch { /* ignore */ } }, [settings]);
 
+  // Auto-record current conversation into history (live updates)
+  useEffect(() => {
+    const userMsgs = messages.filter((m) => m.role === "user" && m.type === "text") as Extract<ChatMessage, { type: "text" }>[];
+    if (!userMsgs.length) return;
+    const title = userMsgs[0].text.slice(0, 80);
+    setChatHistory((prev) => {
+      const id = activeChatId ?? prev.find((c) => c.title === title)?.id ?? newId();
+      if (!activeChatId) setActiveChatId(id);
+      const without = prev.filter((c) => c.id !== id);
+      return [{ id, title, messages, updated: Date.now() }, ...without].slice(0, 30);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages]);
+
   // Persist
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable(messages))); } catch { /* ignore */ }
