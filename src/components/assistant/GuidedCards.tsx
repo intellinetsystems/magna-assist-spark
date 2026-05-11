@@ -400,7 +400,7 @@ export function PartDetailCard({ part }: { part: PartItem }) {
             </div>
           </div>
 
-          <div className="md:col-span-2 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3">
+          <div className="@[520px]:col-span-2 rounded-2xl border border-black/5 bg-[var(--surface-1)] p-3">
             <div className="text-xs font-semibold text-[var(--ink-700)] mb-2">Attachments</div>
             <div className="space-y-1.5 max-h-[260px] overflow-y-auto scrollbar-thin pr-1">
               {attachments.map((a) => (
