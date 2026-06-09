@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Factory } from "lucide-react";
 import { MockHostPage } from "@/components/assistant/MockHostPage";
 import { Assistant } from "@/components/assistant/Assistant";
 
@@ -19,6 +20,12 @@ function Index() {
     <div className="relative h-screen w-screen overflow-hidden">
       <MockHostPage />
       <Assistant />
+      <Link
+        to="/ppc"
+        className="fixed top-3 right-3 z-30 inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-white/90 backdrop-blur border border-black/5 shadow-soft text-[var(--ink-700)] hover:text-[var(--brand-600)] hover:border-[var(--brand-200)]"
+      >
+        <Factory className="w-3.5 h-3.5" /> PPC Console
+      </Link>
     </div>
   );
 }

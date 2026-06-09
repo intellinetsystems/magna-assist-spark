@@ -9,38 +9,72 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PpcRouteImport } from './routes/ppc'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PpcIndexRouteImport } from './routes/ppc.index'
+import { Route as PpcOrdersOrderIdRouteImport } from './routes/ppc.orders.$orderId'
 
+const PpcRoute = PpcRouteImport.update({
+  id: '/ppc',
+  path: '/ppc',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PpcIndexRoute = PpcIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PpcRoute,
+} as any)
+const PpcOrdersOrderIdRoute = PpcOrdersOrderIdRouteImport.update({
+  id: '/orders/$orderId',
+  path: '/orders/$orderId',
+  getParentRoute: () => PpcRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ppc': typeof PpcRouteWithChildren
+  '/ppc/': typeof PpcIndexRoute
+  '/ppc/orders/$orderId': typeof PpcOrdersOrderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ppc': typeof PpcIndexRoute
+  '/ppc/orders/$orderId': typeof PpcOrdersOrderIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ppc': typeof PpcRouteWithChildren
+  '/ppc/': typeof PpcIndexRoute
+  '/ppc/orders/$orderId': typeof PpcOrdersOrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/ppc' | '/ppc/' | '/ppc/orders/$orderId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/ppc' | '/ppc/orders/$orderId'
+  id: '__root__' | '/' | '/ppc' | '/ppc/' | '/ppc/orders/$orderId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  PpcRoute: typeof PpcRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/ppc': {
+      id: '/ppc'
+      path: '/ppc'
+      fullPath: '/ppc'
+      preLoaderRoute: typeof PpcRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +82,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ppc/': {
+      id: '/ppc/'
+      path: '/'
+      fullPath: '/ppc/'
+      preLoaderRoute: typeof PpcIndexRouteImport
+      parentRoute: typeof PpcRoute
+    }
+    '/ppc/orders/$orderId': {
+      id: '/ppc/orders/$orderId'
+      path: '/orders/$orderId'
+      fullPath: '/ppc/orders/$orderId'
+      preLoaderRoute: typeof PpcOrdersOrderIdRouteImport
+      parentRoute: typeof PpcRoute
+    }
   }
 }
 
+interface PpcRouteChildren {
+  PpcIndexRoute: typeof PpcIndexRoute
+  PpcOrdersOrderIdRoute: typeof PpcOrdersOrderIdRoute
+}
+
+const PpcRouteChildren: PpcRouteChildren = {
+  PpcIndexRoute: PpcIndexRoute,
+  PpcOrdersOrderIdRoute: PpcOrdersOrderIdRoute,
+}
+
+const PpcRouteWithChildren = PpcRoute._addFileChildren(PpcRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  PpcRoute: PpcRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
