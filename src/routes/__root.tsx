@@ -121,7 +121,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <FontSizeControl />
+      
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
