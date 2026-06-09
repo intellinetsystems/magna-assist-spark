@@ -869,6 +869,7 @@ function Header({ listening, quickOpen, setQuickOpen, onMaximize, onMinimize, on
         <MessageSquarePlus className="w-4 h-4" />
       </button>
       <QuickActionsButton quickOpen={quickOpen} setQuickOpen={setQuickOpen} onQuickAction={onQuickAction} />
+      <TypographyToggle />
 
       {/* Window controls */}
       <div className="flex items-center gap-0.5 pl-1 ml-1 border-l border-black/5">
