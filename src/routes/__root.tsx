@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { FontSizeControl } from "@/components/FontSizeControl";
+
 
 
 function NotFoundComponent() {
@@ -121,7 +121,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
-      <FontSizeControl />
+      
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );
