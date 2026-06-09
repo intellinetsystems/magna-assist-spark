@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-router";
 
 import appCss from "../styles.css?url";
-import { FontSizeControl } from "@/components/FontSizeControl";
+
 
 
 function NotFoundComponent() {
