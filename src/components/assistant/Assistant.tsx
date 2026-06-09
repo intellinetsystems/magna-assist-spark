@@ -23,6 +23,7 @@ import {
 } from "./GuidedCards";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
+import { TypographyToggle } from "./TypographyToggle";
 
 type Mode = "closed" | "panel" | "full";
 
