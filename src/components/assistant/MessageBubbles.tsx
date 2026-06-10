@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft, Eye } from "lucide-react";
 import { useState } from "react";
+import { FeedbackActions } from "./FeedbackActions";
 
 function formatText(text: string) {
   // bold **x** and mono for codes (alphanumeric with dashes 6+ chars uppercase or part-no patterns)
@@ -34,7 +35,7 @@ export function UserBubble({ text }: { text: string }) {
   );
 }
 
-export function BotShell({ children }: { children: React.ReactNode }) {
+export function BotShell({ children, showFeedback = true }: { children: React.ReactNode; showFeedback?: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -45,7 +46,10 @@ export function BotShell({ children }: { children: React.ReactNode }) {
       <div className="w-7 h-7 rounded-full bg-gradient-brand flex items-center justify-center shadow-soft shrink-0 mt-1">
         <Sparkles className="w-4 h-4 text-white" strokeWidth={2} />
       </div>
-      <div className="flex-1 min-w-0">{children}</div>
+      <div className="flex-1 min-w-0">
+        {children}
+        {showFeedback && <FeedbackActions />}
+      </div>
     </motion.div>
   );
 }
@@ -62,7 +66,7 @@ export function BotText({ text }: { text: string }) {
 
 export function TypingBubble() {
   return (
-    <BotShell>
+    <BotShell showFeedback={false}>
       <div className="inline-flex bg-white border border-black/[0.04] rounded-3xl rounded-tl-md px-4 py-3 shadow-soft items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <span
