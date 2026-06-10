@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Sparkles, CheckCircle2, Copy, Truck, Package as PackageIcon, MapPin, Clock, ChevronRight, Image as ImageIcon, Paperclip, FileText, Box, BarChart3, ChevronDown, X, ChevronLeft, Eye } from "lucide-react";
 import { useState } from "react";
+import { FeedbackActions } from "./FeedbackActions";
 
 function formatText(text: string) {
   // bold **x** and mono for codes (alphanumeric with dashes 6+ chars uppercase or part-no patterns)
