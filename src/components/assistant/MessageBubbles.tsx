@@ -66,7 +66,7 @@ export function BotText({ text }: { text: string }) {
 
 export function TypingBubble() {
   return (
-    <BotShell>
+    <BotShell showFeedback={false}>
       <div className="inline-flex bg-white border border-black/[0.04] rounded-3xl rounded-tl-md px-4 py-3 shadow-soft items-center gap-1.5">
         {[0, 1, 2].map((i) => (
           <span
