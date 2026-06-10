@@ -35,7 +35,7 @@ export function UserBubble({ text }: { text: string }) {
   );
 }
 
-export function BotShell({ children }: { children: React.ReactNode }) {
+export function BotShell({ children, showFeedback = true }: { children: React.ReactNode; showFeedback?: boolean }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -46,7 +46,10 @@ export function BotShell({ children }: { children: React.ReactNode }) {
       <div className="w-7 h-7 rounded-full bg-gradient-brand flex items-center justify-center shadow-soft shrink-0 mt-1">
         <Sparkles className="w-4 h-4 text-white" strokeWidth={2} />
       </div>
-      <div className="flex-1 min-w-0">{children}</div>
+      <div className="flex-1 min-w-0">
+        {children}
+        {showFeedback && <FeedbackActions />}
+      </div>
     </motion.div>
   );
 }
