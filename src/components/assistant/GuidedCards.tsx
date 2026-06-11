@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Mic, ChevronDown, ChevronRight, Search, Clock, Truck, MapPin, Bell, ExternalLink,
+  Mic, ChevronDown, ChevronRight, ChevronLeft, Search, Clock, Truck, MapPin, Bell, ExternalLink,
   AlertTriangle, Ticket as TicketIcon, RefreshCw, Play, FileText, Box, Image as ImageIcon,
-  Download, CheckCircle2, Share2, Plus, ArrowRight, X, ZoomIn,
+  Download, CheckCircle2, Share2, Plus, ArrowRight, X, ZoomIn, Maximize2, Copy as CopyIcon, Mail, Printer, Camera, Paperclip,
 } from "lucide-react";
 import { BotShell } from "./MessageBubbles";
 import { popularModels, moreModels, variantsByModel, partCategories, accessorySeries, attachmentCategories, modelsByAttachment, assembliesByVariant, defaultAssemblies, quickRefCategories, quickRefSubmodels, buildFilters, buildKeys, findSeries, findModelsBySeries, findAggregates, findAssembliesByAggregate, type PartItem } from "@/lib/flows";
