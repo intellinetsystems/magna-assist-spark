@@ -243,6 +243,25 @@ export function Assistant() {
       return;
     }
 
+    // FLOW: "I am looking for Part Number XXX" — demo multi-result list
+    const lookingFor = text.match(/(?:looking\s*for|find|search(?:ing)?\s*for|part\s*(?:no\.?|number))\s*['"]?([A-Z0-9]{6,})['"]?/i);
+    if (lookingFor) {
+      const partNo = lookingFor[1].toUpperCase();
+      const demoItem: PartItem = {
+        partNo: "00601731081", description: "OIL FILTER", category: "Quick Reference",
+        vehicle: "Filter List", model: "05 Series", variant: "05 Series",
+        aggregate: "3505", groupNo: "QRF-05 Series 3505-fig 101",
+        assembly: "Filter List - 3505", figure: "QRF-05 - FIG 101",
+        refNo: 1, qty: 1, cost: 0, mrp: 0, inStock: 12, isQuickRef: true,
+      };
+      const items = Array.from({ length: 7 }, () => demoItem);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "result-list", query: partNo, model: "05 Series", variant: "05 Series", items });
+      }, 900);
+      return;
+    }
+
     // FLOW 1 — exact part-no lookup
     const partMatch = text.match(/\b(KMW[A-Z0-9]+|E\d{6,}[A-Z0-9]*)\b/i);
     if (partMatch) {
