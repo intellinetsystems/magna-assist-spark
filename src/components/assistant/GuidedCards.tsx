@@ -199,56 +199,276 @@ function PartThumb({ seed }: { seed: number }) {
 export function ResultListCard({ items, query, model, variant, onSelect }: {
   items: PartItem[]; query: string; model: string; variant: string; onSelect: (p: PartItem) => void;
 }) {
-  const [search, setSearch] = useState("");
-  const filtered = items.filter((p) =>
-    !search || p.partNo.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase())
-  );
+  const [headerOpen, setHeaderOpen] = useState(true);
+  const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  void query; void model; void variant;
+
+  // Pad/limit to 7 rows for the demo visual
+  const rows = (items.length >= 1 ? items : items).slice(0, 7);
+  while (rows.length < 5 && items.length > 0) rows.push(items[0]);
+
+  const actions = [
+    { Icon: Maximize2, label: "Fullscreen" },
+    { Icon: CopyIcon, label: "Copy" },
+    { Icon: Download, label: "Download" },
+    { Icon: Mail, label: "Email" },
+    { Icon: Share2, label: "Share" },
+    { Icon: Printer, label: "Print" },
+  ];
+
   return (
     <BotShell>
-      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-2xl">
-        <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-          <div className="text-sm text-[var(--ink-700)]">
-            Found <strong className="text-[var(--ink-900)]">{items.length}</strong> matches for <span className="font-medium text-[var(--brand-600)]">"{query}"</span> in {model} — {variant}
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-[var(--surface-1)] border border-black/5 rounded-full px-2.5 py-1">
-              <Search className="w-3 h-3 text-[var(--ink-500)]" />
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search results" className="bg-transparent text-xs outline-none w-28" />
+      <div
+        className="bg-white rounded-[10px] w-full max-w-3xl overflow-hidden"
+        style={{ border: "1px solid #F4C6CB", boxShadow: "0px 2px 8px rgba(0,0,0,0.05)" }}
+      >
+        {/* Pink header */}
+        <button
+          onClick={() => setHeaderOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-4 py-3 text-left"
+          style={{ background: "#FDEBEC" }}
+        >
+          <span className="font-semibold text-[14px] text-[var(--ink-900)]">Part Details</span>
+          <ChevronDown className={`w-4 h-4 text-[var(--ink-700)] transition-transform ${headerOpen ? "" : "-rotate-90"}`} />
+        </button>
+
+        {headerOpen && (
+          <div className="p-4">
+            <p className="text-[13px] text-[var(--ink-700)] leading-relaxed">
+              I found all the below parts. Can you please select the one you want to proceed ahead?
+            </p>
+
+            <div className="flex items-center justify-between mt-4 mb-2">
+              <div className="text-[13px] font-semibold tracking-wide text-[var(--ink-900)]">
+                {rows.length} PARTS FOUND
+              </div>
+              <button className="text-[12px] text-[var(--ink-700)] inline-flex items-center gap-1 hover:text-[var(--brand-600)]">
+                Sort : <span className="font-medium">Relevance</span>
+                <ChevronDown className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <button className="text-xs px-3 py-1 rounded-full border border-black/10 hover:bg-[var(--brand-50)] inline-flex items-center gap-1">
-              Sort: Relevance <ChevronDown className="w-3 h-3" />
-            </button>
+
+            {/* Rows */}
+            <div className="rounded-[10px] overflow-hidden" style={{ border: "1px solid #F4C6CB" }}>
+              {rows.map((p, i) => {
+                const isExpanded = expandedIdx === i;
+                return (
+                  <div key={i} className={i > 0 ? "border-t" : ""} style={i > 0 ? { borderColor: "#F4C6CB" } : undefined}>
+                    <button
+                      onClick={() => setExpandedIdx(isExpanded ? null : i)}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[14px]">
+                          <span className="font-mono font-semibold" style={{ color: "#E31837" }}>{p.partNo}</span>
+                          <span className="text-[var(--ink-700)]"> - {p.description.toUpperCase()}</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-1 text-[12px] text-[var(--ink-700)]">
+                          <span className="uppercase tracking-wide">{p.model || "05 Series"}</span>
+                          <span className="inline-flex items-center gap-1" style={{ color: "#28A745" }}>
+                            <CheckCircle2 className="w-3 h-3" /> In stock
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="text-[10px] text-[var(--ink-500)] uppercase tracking-wide">MRP</div>
+                        <div className="text-[13px] font-semibold text-[var(--ink-900)]">{p.mrp.toFixed(2)}</div>
+                      </div>
+                      <ChevronRight className={`w-4 h-4 shrink-0 transition-transform ${isExpanded ? "rotate-90" : ""}`} style={{ color: "#E31837" }} />
+                    </button>
+
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 bg-white">
+                        {/* Metadata: 3 columns */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3 mt-2">
+                          <MetaItem label="CATEGORY" value={p.category || "Quick Reference"} />
+                          <MetaItem label="VEHICLE" value={p.vehicle || "Filter List"} />
+                          <MetaItem label="AGGREGATE" value={p.aggregate || "3505"} />
+                          <MetaItem label="GROUP NO." value={p.groupNo || "QRF-05 Series 3505-fig 101"} />
+                          <MetaItem label="ASSEMBLY" value={p.assembly || "Filter List - 3505"} />
+                        </div>
+
+                        {/* EPC + Images */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+                          {/* EPC */}
+                          <div className="rounded-[10px] p-2 relative bg-white" style={{ border: "1px solid #F4C6CB" }}>
+                            <button
+                              onClick={() => setLightbox(0)}
+                              className="absolute top-2 right-2 z-10 p-1 rounded bg-white/90 hover:bg-white"
+                              style={{ border: "1px solid #F4C6CB", color: "#E31837" }}
+                              aria-label="Expand diagram"
+                            >
+                              <Maximize2 className="w-3.5 h-3.5" />
+                            </button>
+                            <div className="aspect-[4/3] bg-white flex items-center justify-center overflow-hidden">
+                              <img src={backhoeValveFig} alt="EPC exploded view" className="w-full h-full object-contain" />
+                            </div>
+                          </div>
+
+                          {/* Images gallery */}
+                          <div>
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="text-[12px] font-semibold text-[var(--ink-700)] inline-flex items-center gap-1.5">
+                                <Camera className="w-3.5 h-3.5" style={{ color: "#E31837" }} /> Images
+                              </div>
+                            </div>
+                            <ImageStrip onOpen={(idx) => setLightbox(idx + 1)} />
+                          </div>
+                        </div>
+
+                        {/* Attachments */}
+                        <div className="mt-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="text-[12px] font-semibold text-[var(--ink-700)] inline-flex items-center gap-1.5">
+                              <Paperclip className="w-3.5 h-3.5" style={{ color: "#E31837" }} /> Attachments
+                            </div>
+                          </div>
+                          <AttachmentStrip />
+                        </div>
+
+                        <div className="mt-4">
+                          <button
+                            onClick={() => onSelect(p)}
+                            className="text-[12px] font-semibold inline-flex items-center gap-1 hover:underline"
+                            style={{ color: "#E31837" }}
+                          >
+                            Proceed with this part <ChevronRight className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Bottom action toolbar */}
+            <div className="flex items-center gap-1 mt-3">
+              {actions.map((a) => (
+                <button
+                  key={a.label}
+                  title={a.label}
+                  onClick={() => toast(a.label)}
+                  className="p-1.5 rounded hover:bg-[#FDEBEC] transition"
+                  aria-label={a.label}
+                >
+                  <a.Icon className="w-4 h-4" style={{ color: "#E31837" }} />
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="space-y-2">
-          {filtered.map((p) => (
-            <motion.button
-              key={p.partNo}
-              whileHover={{ scale: 1.005 }}
-              onClick={() => onSelect(p)}
-              className="w-full flex items-center gap-3 p-3 rounded-2xl border border-black/5 hover:bg-[var(--brand-50)]/40 hover:border-[var(--brand-200)] hover:shadow-soft transition text-left"
-            >
-              <div className="w-14 h-14 rounded-xl bg-[var(--surface-1)] border border-black/5 shrink-0 overflow-hidden">
-                <PartThumb seed={p.partNo.length} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono text-[13px] font-semibold text-[var(--brand-600)]">{p.partNo}</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[var(--surface-2)] text-[var(--ink-700)]">{p.category}</span>
-                </div>
-                <div className="text-sm text-[var(--ink-900)] mt-0.5 truncate">{p.description}</div>
-                <div className="text-[11px] text-[var(--ink-500)] mt-0.5">{p.assembly} · {p.aggregate}</div>
-              </div>
-              <div className="text-right shrink-0">
-                <div className="text-[10px] text-[var(--ink-500)] uppercase">MRP</div>
-                <div className="text-sm font-semibold text-[var(--ink-900)]">${p.mrp.toFixed(2)}</div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[var(--ink-500)] shrink-0" />
-            </motion.button>
-          ))}
-        </div>
+        )}
       </div>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox !== null && (
+          <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-center justify-center p-6" onClick={() => setLightbox(null)}>
+            <motion.div
+              initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.96, opacity: 0 }}
+              className="bg-white rounded-2xl p-4 max-w-4xl w-full relative"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button onClick={() => setLightbox(null)} className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-gray-100">
+                <X className="w-4 h-4" />
+              </button>
+              <div className="aspect-video flex items-center justify-center">
+                <img src={backhoeValveFig} alt="Preview" className="max-w-full max-h-full object-contain" />
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </BotShell>
+  );
+}
+
+function MetaItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0">
+      <div className="text-[10px] uppercase tracking-wider text-[var(--ink-500)] font-medium">{label}</div>
+      <div className="text-[13px] text-[var(--ink-900)] font-semibold uppercase mt-0.5 break-words">{value}</div>
+    </div>
+  );
+}
+
+function ImageStrip({ onOpen }: { onOpen: (i: number) => void }) {
+  const [idx, setIdx] = useState(0);
+  const count = 4;
+  return (
+    <div className="relative">
+      <div className="grid grid-cols-4 gap-2">
+        {Array.from({ length: count }).map((_, i) => (
+          <button
+            key={i}
+            onClick={() => onOpen(i)}
+            className="aspect-square rounded-[10px] overflow-hidden bg-white hover:opacity-90 transition"
+            style={{ border: "1px solid #F4C6CB" }}
+          >
+            <img src={backhoeValveFig} alt={`Part image ${i + 1}`} className="w-full h-full object-contain p-1" />
+          </button>
+        ))}
+      </div>
+      <button
+        onClick={() => setIdx((v) => Math.max(0, v - 1))}
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center"
+        style={{ border: "1px solid #F4C6CB", color: "#E31837" }}
+        aria-label="Previous"
+      >
+        <ChevronLeft className="w-3.5 h-3.5" />
+      </button>
+      <button
+        onClick={() => setIdx((v) => Math.min(count - 1, v + 1))}
+        className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center"
+        style={{ border: "1px solid #F4C6CB", color: "#E31837" }}
+        aria-label="Next"
+      >
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
+      <div className="sr-only">Showing image {idx + 1}</div>
+    </div>
+  );
+}
+
+function AttachmentStrip() {
+  const items = [
+    { Icon: FileText, label: "PDF", color: "#D32F2F" },
+    { Icon: Box, label: "3D", color: "#3F51B5" },
+    { Icon: FileText, label: "DOC", color: "#1976D2" },
+    { Icon: FileText, label: "XLS", color: "#2E7D32" },
+    { Icon: FileText, label: "PPT", color: "#E64A19" },
+  ];
+  return (
+    <div className="relative">
+      <div className="grid grid-cols-4 gap-2">
+        {items.slice(0, 4).map((a) => (
+          <button
+            key={a.label}
+            onClick={() => toast(`Opening ${a.label}`)}
+            className="aspect-square rounded-[10px] bg-white flex flex-col items-center justify-center gap-1 hover:bg-[#FDEBEC] transition"
+            style={{ border: "1px solid #F4C6CB" }}
+          >
+            <a.Icon className="w-7 h-7" style={{ color: a.color }} />
+            <span className="text-[10px] font-semibold text-[var(--ink-700)]">{a.label}</span>
+          </button>
+        ))}
+      </div>
+      <button
+        className="absolute -left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center"
+        style={{ border: "1px solid #F4C6CB", color: "#E31837" }}
+        aria-label="Previous"
+      >
+        <ChevronLeft className="w-3.5 h-3.5" />
+      </button>
+      <button
+        className="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow flex items-center justify-center"
+        style={{ border: "1px solid #F4C6CB", color: "#E31837" }}
+        aria-label="Next"
+      >
+        <ChevronRight className="w-3.5 h-3.5" />
+      </button>
+    </div>
   );
 }
 
