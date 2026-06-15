@@ -371,6 +371,46 @@ export function Assistant() {
       setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "bulk-upload" }), 600);
       return;
     }
+
+    // "Use vehicle Scorpio-N" / "Select model XUV700" — sets sticky vehicle context
+    const setVeh = text.match(/^(?:use|set|select|my)\s+(?:vehicle|model)\s*(?:to|is)?\s*[:\-]?\s*(.+)$/i);
+    if (setVeh) {
+      const v = normalizeModel(setVeh[1]);
+      selectedVehicleRef.current = v;
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `Got it — I'll use **${v}** as the selected vehicle for upcoming orders.` }), 200);
+      return;
+    }
+
+    // Description-only ordering: quantities provided but no explicit part numbers.
+    // e.g. "I need 20 Engine Oil Filters and 15 Fuel Filters"
+    if (
+      /^(add|order|i\s+need|i\s+want|please\s+add|book|get\s*me)\s+/i.test(text) &&
+      /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred)\b/i.test(text) &&
+      !/part\s*(number|no\.?|#)/i.test(text)
+    ) {
+      const parsed = parseDescriptionOrder(text);
+      const anyMatches = parsed.some((p) => p.matches.length > 0 || p.oversaturated);
+      if (parsed.length > 0 && anyMatches) {
+        const ctx = extractVehicleContext(text) ?? selectedVehicleRef.current;
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          // Single-match across all items + no oversaturation → shortest path
+          const singleAll = !ctx && parsed.every((it) => it.matches.length === 1 && !it.oversaturated);
+          const lead = ctx
+            ? `Based on the selected vehicle (**${ctx}**), I found:`
+            : singleAll
+              ? `I found exact matches for your request:`
+              : `I found multiple parts matching your request.`;
+          pushMessage({ id: newId(), role: "bot", type: "text", text: lead });
+          setTimeout(() => pushMessage({
+            id: newId(), role: "bot", type: "desc-order-options",
+            itemsJson: JSON.stringify(parsed), contextModel: ctx ?? null,
+          }), 300);
+        }, 900);
+        return;
+      }
+    }
+
     // Multi-part voice/text ordering: starts with add/order/i need + numbers
     if (/^(add|order|i\s+need|i\s+want|please\s+add|book)\s+.+/i.test(text) && /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred)\b/i.test(text)) {
       const parsed = parseVoiceOrder(text);
