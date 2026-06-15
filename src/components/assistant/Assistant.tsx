@@ -5,6 +5,7 @@ import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
   Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
+  Tag, Upload, ShoppingCart, Clock,
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
@@ -21,6 +22,15 @@ import {
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
   FindSeriesCard, FindModelCard, FindAggregateCard, FindAssemblyCard,
 } from "./GuidedCards";
+import {
+  CampaignListCard, CartOfferAnalysisCard, RecommendationBanner, AlertCard, CartReviewCard,
+  BulkUploadCard, UploadSummaryCard, BulkInsightsCard,
+  VoiceOrderConfirmCard, VoiceOrderSuccessCard, SupersededPartPrompt, DuplicateConsolidationCard, InvalidPartCard,
+} from "./OffersUploadVoice";
+import {
+  campaigns as allCampaigns, parseVoiceOrder, consolidate, validateBulkRows,
+  matchCampaignsForParts, totalSavings, formatINR, demoCart, type ParsedOrderItem, type BulkValidationResult,
+} from "@/lib/offers-data";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
 import { TypographyToggle } from "./TypographyToggle";
