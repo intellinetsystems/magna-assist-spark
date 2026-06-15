@@ -867,6 +867,24 @@ export function Assistant() {
       onAccept={() => toast.success(`Switched to ${m.newPart}`)} onKeep={() => toast(`Kept ${m.oldPart}`)} />;
     if (m.type === "duplicate-consolidation") return <DuplicateConsolidationCard key={m.id} partNo={m.partNo} totalQty={m.totalQty} onProceed={() => toast.success("Consolidated quantity confirmed")} />;
     if (m.type === "invalid-part") return <InvalidPartCard key={m.id} partNo={m.partNo} onRetry={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Please re-enter the part number." })} />;
+    if (m.type === "desc-order-options") {
+      const items = JSON.parse(m.itemsJson) as DescOrderItem[];
+      return <DescriptionOrderCard
+        key={m.id}
+        items={items}
+        contextModel={m.contextModel ?? null}
+        onConfirm={(picked) => {
+          if (!picked.length) return;
+          pushMessage({ id: newId(), role: "user", type: "text", text: m.contextModel ? "Confirm Order" : `Add ${picked.length} selected part(s)` });
+          const totalQty = picked.reduce((a, p) => a + p.qty, 0);
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `Added **${picked.length} part(s)** (${totalQty} units) to your cart:\n${picked.map((p) => `• ${p.partNo} — ${p.description} (${p.model}) × ${p.qty}`).join("\n")}` }), 400);
+          setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "voice-order-success", totalParts: picked.length, totalQty }), 1000);
+        }}
+        onCancel={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Cancelled — no items were added to your cart." })}
+        onSearchVin={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Please type your **VIN** (17 characters) and I'll narrow the results." })}
+        onSearchModel={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Tell me the **model name** (e.g. *Use vehicle Scorpio-N*) and I'll filter the matches." })}
+      />;
+    }
     return null;
   };
 
