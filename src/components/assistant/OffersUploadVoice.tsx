@@ -650,3 +650,184 @@ export function InvalidPartCard({ partNo, onRetry }: { partNo: string; onRetry: 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 // Re-export campaigns just so consumers don't double-import.
 export { allCampaigns };
+
+/* ============================================================
+   DESCRIPTION-ONLY MULTI-PART ORDERING
+   ============================================================ */
+import type { DescOrderItem, DescriptionPart } from "@/lib/offers-data";
+
+export function DescriptionOrderCard({
+  items, contextModel, onConfirm, onCancel, onSearchVin, onSearchModel,
+}: {
+  items: DescOrderItem[];
+  contextModel?: string | null;
+  onConfirm: (picked: { partNo: string; description: string; qty: number; model: string; mrp: number }[]) => void;
+  onCancel: () => void;
+  onSearchVin: () => void;
+  onSearchModel: () => void;
+}) {
+  // selection map: itemIdx -> Set<partNo>
+  const [sel, setSel] = useState<Record<number, Set<string>>>(() => {
+    const init: Record<number, Set<string>> = {};
+    items.forEach((it, i) => {
+      const set = new Set<string>();
+      if (contextModel) {
+        const m = it.matches.find((p) => p.model.toLowerCase() === contextModel.toLowerCase());
+        if (m) set.add(m.partNo);
+      } else if (it.matches.length === 1) {
+        set.add(it.matches[0].partNo);
+      }
+      init[i] = set;
+    });
+    return init;
+  });
+  const [showMore, setShowMore] = useState<Record<number, boolean>>({});
+
+  function toggle(idx: number, partNo: string) {
+    setSel((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[idx]);
+      if (set.has(partNo)) set.delete(partNo);
+      else set.add(partNo);
+      next[idx] = set;
+      return next;
+    });
+  }
+
+  function handleConfirm() {
+    const picked: { partNo: string; description: string; qty: number; model: string; mrp: number }[] = [];
+    items.forEach((it, i) => {
+      const set = sel[i] ?? new Set();
+      set.forEach((pn) => {
+        const p = it.matches.find((x) => x.partNo === pn);
+        if (p) picked.push({ partNo: p.partNo, description: p.description, qty: it.qty, model: p.model, mrp: p.mrp });
+      });
+    });
+    onConfirm(picked);
+  }
+
+  const totalSelected = Object.values(sel).reduce((a, s) => a + s.size, 0);
+  const smartContext = !!contextModel && items.every((it, i) => (sel[i]?.size ?? 0) > 0);
+
+  return (
+    <BotShell>
+      <div className="bg-white border border-black/[0.04] rounded-3xl rounded-tl-md p-4 shadow-soft w-full max-w-2xl space-y-4">
+        <div className="text-sm font-semibold text-[var(--ink-900)] flex items-center gap-2">
+          <Mic className="w-4 h-4 text-[var(--brand-600)]" />
+          {contextModel
+            ? `Based on the selected vehicle (${contextModel}), I found these parts:`
+            : `I found multiple parts matching your request.`}
+        </div>
+
+        {items.map((it, idx) => {
+          const isTooMany = it.oversaturated;
+          const isSingle = !isTooMany && it.matches.length === 1;
+          const visibleMatches = showMore[idx] ? it.matches : it.matches.slice(0, 10);
+          return (
+            <div key={idx} className="border border-black/5 rounded-2xl overflow-hidden">
+              <div className="flex items-center justify-between bg-[var(--brand-50)] px-3 py-2">
+                <div className="text-sm font-semibold text-[var(--ink-900)]">{it.description} Options</div>
+                <span className="text-[10px] uppercase tracking-wider text-[var(--ink-500)]">
+                  Requested Qty: <b className="text-[var(--brand-700)]">{it.qty}</b>
+                </span>
+              </div>
+
+              {isTooMany ? (
+                <div className="px-3 py-3 text-sm text-[var(--ink-700)] space-y-2">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                    <span>
+                      I found <b>{it.totalMatchCount}</b> {it.description.toLowerCase()}s matching your request.
+                      To find the correct part, please provide a <b>VIN</b>, <b>Model Name</b>, or <b>Part Number</b>.
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <button onClick={onSearchVin} className="text-[11px] px-2.5 py-1 rounded-full border border-black/10 hover:bg-[var(--surface-1)] text-[var(--ink-700)]">Enter VIN</button>
+                    <button onClick={onSearchModel} className="text-[11px] px-2.5 py-1 rounded-full border border-black/10 hover:bg-[var(--surface-1)] text-[var(--ink-700)]">Select Model</button>
+                    <button className="text-[11px] px-2.5 py-1 rounded-full border border-black/10 hover:bg-[var(--surface-1)] text-[var(--ink-700)]">View All Results</button>
+                  </div>
+                </div>
+              ) : it.matches.length === 0 ? (
+                <div className="px-3 py-3 text-sm text-[var(--ink-500)] italic">
+                  No parts in catalogue match "{it.description}".
+                </div>
+              ) : (
+                <>
+                  <table className="w-full text-xs">
+                    <thead className="bg-[var(--surface-1)] text-[var(--ink-500)] uppercase tracking-wider">
+                      <tr>
+                        <th className="w-8" />
+                        <th className="text-left px-3 py-2 font-medium">Part Number</th>
+                        <th className="text-left px-3 py-2 font-medium">Description</th>
+                        <th className="text-left px-3 py-2 font-medium">Applicable Models</th>
+                        <th className="text-right px-3 py-2 font-medium">MRP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visibleMatches.map((p) => {
+                        const checked = sel[idx]?.has(p.partNo) ?? false;
+                        const ctxHit = !!contextModel && p.model.toLowerCase() === contextModel.toLowerCase();
+                        return (
+                          <tr
+                            key={p.partNo}
+                            onClick={() => toggle(idx, p.partNo)}
+                            className={`border-t border-black/5 cursor-pointer hover:bg-[var(--surface-1)] ${ctxHit ? "bg-emerald-50/40" : ""}`}
+                          >
+                            <td className="px-2 py-2 text-center">
+                              <input type="checkbox" readOnly checked={checked} className="accent-[var(--brand-600)]" />
+                            </td>
+                            <td className="px-3 py-2 font-mono text-[var(--brand-600)] font-semibold">{p.partNo}</td>
+                            <td className="px-3 py-2 text-[var(--ink-700)]">{p.description}</td>
+                            <td className="px-3 py-2 text-[var(--ink-700)]">{p.model}</td>
+                            <td className="px-3 py-2 text-right text-[var(--ink-900)] font-medium">{formatINR(p.mrp)}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                  {it.matches.length > 10 && (
+                    <button
+                      onClick={() => setShowMore((p) => ({ ...p, [idx]: !p[idx] }))}
+                      className="w-full text-[11px] py-1.5 text-[var(--brand-700)] hover:bg-[var(--brand-50)] border-t border-black/5"
+                    >
+                      {showMore[idx] ? "Show Less" : `Show More (${it.matches.length - 10} more)`}
+                    </button>
+                  )}
+                  {isSingle && (
+                    <div className="px-3 py-2 text-[11px] text-emerald-700 bg-emerald-50 border-t border-emerald-100 inline-flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Single matching part auto-selected.
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })}
+
+        {!items.some((i) => i.oversaturated) && (
+          <div className="text-xs text-[var(--ink-500)]">
+            {smartContext
+              ? "Would you like me to add these items to your cart?"
+              : "Please select the required part(s), or provide a VIN / Model Name to narrow down the search."}
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={handleConfirm}
+            disabled={totalSelected === 0}
+            className="text-xs px-3 py-1.5 rounded-full bg-gradient-brand text-white font-medium inline-flex items-center gap-1 disabled:opacity-40"
+          >
+            {smartContext ? "Confirm Order" : `Select Parts (${totalSelected})`}
+            <Check className="w-3 h-3" />
+          </button>
+          <button onClick={onSearchVin} className="text-xs px-3 py-1.5 rounded-full border border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-1)]">Search by VIN</button>
+          <button onClick={onSearchModel} className="text-xs px-3 py-1.5 rounded-full border border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-1)]">Search by Model</button>
+          <button onClick={onCancel} className="text-xs px-3 py-1.5 rounded-full border border-black/10 text-[var(--ink-700)] hover:bg-[var(--surface-1)] inline-flex items-center gap-1 ml-auto">
+            <X className="w-3 h-3" /> Cancel
+          </button>
+        </div>
+      </div>
+    </BotShell>
+  );
+}

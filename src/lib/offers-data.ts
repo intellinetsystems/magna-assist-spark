@@ -316,3 +316,99 @@ export function totalSavings(matched: Campaign[]): number {
 export function formatINR(n: number): string {
   return `₹${n.toLocaleString("en-IN")}`;
 }
+
+// ===================== Description-Only Ordering =====================
+// Catalog of parts identified by description with applicable vehicle model.
+export type DescriptionPart = { partNo: string; description: string; model: string; mrp: number; inStock: number };
+
+export const descriptionPartsCatalog: DescriptionPart[] = [
+  // Engine Oil Filters
+  { partNo: "ABC-123", description: "Engine Oil Filter", model: "Scorpio-N", mrp: 480, inStock: 142 },
+  { partNo: "ABC-456", description: "Engine Oil Filter", model: "XUV700", mrp: 510, inStock: 88 },
+  { partNo: "ABC-789", description: "Engine Oil Filter", model: "Thar", mrp: 470, inStock: 56 },
+  // Fuel Filters
+  { partNo: "XYZ-123", description: "Fuel Filter", model: "Scorpio-N", mrp: 620, inStock: 64 },
+  { partNo: "XYZ-456", description: "Fuel Filter", model: "XUV700", mrp: 640, inStock: 32 },
+  { partNo: "XYZ-789", description: "Fuel Filter", model: "Thar", mrp: 600, inStock: 41 },
+  // Air Filter — single match
+  { partNo: "AIR-001", description: "Air Filter", model: "Scorpio-N", mrp: 380, inStock: 120 },
+  // Brake Pad — also available on multiple models
+  { partNo: "BRK-301", description: "Brake Pad", model: "Scorpio-N", mrp: 2450, inStock: 22 },
+  { partNo: "BRK-302", description: "Brake Pad", model: "XUV700", mrp: 2550, inStock: 18 },
+];
+
+// Some descriptions are intentionally "too broad" — simulates >10 matches across years/variants.
+export const tooManyMatchesDescriptions: Record<string, number> = {
+  "engine oil filter all models": 24,
+};
+
+const descriptionVehicleHints = ["Scorpio-N", "Scorpio N", "XUV700", "XUV 700", "Thar", "XEV 9E", "XEV9E"];
+
+export function normalizeModel(s: string): string {
+  const v = s.replace(/\s+/g, "").toLowerCase();
+  if (v.includes("scorpio")) return "Scorpio-N";
+  if (v.includes("xuv700")) return "XUV700";
+  if (v.includes("thar")) return "Thar";
+  if (v.includes("xev9e") || v.includes("xev")) return "XEV 9E";
+  return s.trim();
+}
+
+export function findPartsByDescription(desc: string, model?: string | null): DescriptionPart[] {
+  const d = desc.toLowerCase().replace(/s\b/g, "").replace(/\.$/, "").trim();
+  const list = descriptionPartsCatalog.filter((p) => {
+    const pd = p.description.toLowerCase();
+    return pd === d || pd.includes(d) || d.includes(pd);
+  });
+  if (model) {
+    const norm = normalizeModel(model);
+    const filtered = list.filter((p) => p.model.toLowerCase() === norm.toLowerCase());
+    if (filtered.length) return filtered;
+  }
+  return list;
+}
+
+export type DescOrderItem = {
+  description: string;
+  qty: number;
+  matches: DescriptionPart[];
+  oversaturated?: boolean; // >10 matches → simulate "too many"
+  totalMatchCount?: number;
+};
+
+export function parseDescriptionOrder(text: string): DescOrderItem[] {
+  const cleaned = text
+    .replace(/^\s*(add|order|i\s+need|i\s+want|please\s+add|book|get\s*me)\s+/i, "")
+    .replace(/\.$/, "");
+  const chunks = cleaned.split(/\s+and\s+|,\s*/i).map((c) => c.trim()).filter(Boolean);
+  const items: DescOrderItem[] = [];
+  for (const chunk of chunks) {
+    const m = chunk.match(/^(\d+|[a-z\s-]+?)\s+(.+)$/i);
+    if (!m) continue;
+    const qtyRaw = m[1].trim();
+    let qty: number | null = /^\d+$/.test(qtyRaw) ? parseInt(qtyRaw, 10) : wordsToNumber(qtyRaw);
+    if (qty === null) {
+      const first = qtyRaw.split(/\s+/)[0].toLowerCase();
+      qty = numberWords[first] ?? null;
+    }
+    if (!qty || qty <= 0) continue;
+    const desc = m[2].replace(/\.$/, "").trim();
+    const matches = findPartsByDescription(desc);
+    const oversat = tooManyMatchesDescriptions[desc.toLowerCase()] ?? 0;
+    items.push({
+      description: desc,
+      qty,
+      matches,
+      oversaturated: oversat > 10,
+      totalMatchCount: oversat || matches.length,
+    });
+  }
+  return items;
+}
+
+export function extractVehicleContext(text: string): string | null {
+  for (const v of descriptionVehicleHints) {
+    const re = new RegExp(`\\b${v.replace(/[-\s]/g, "[\\s-]?")}\\b`, "i");
+    if (re.test(text)) return normalizeModel(v);
+  }
+  return null;
+}

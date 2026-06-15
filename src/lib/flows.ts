@@ -59,7 +59,8 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "voice-order-success"; totalParts: number; totalQty: number }
   | { id: string; role: "bot"; type: "superseded-prompt"; oldPart: string; newPart: string; qty: number }
   | { id: string; role: "bot"; type: "duplicate-consolidation"; partNo: string; totalQty: number }
-  | { id: string; role: "bot"; type: "invalid-part"; partNo: string };
+  | { id: string; role: "bot"; type: "invalid-part"; partNo: string }
+  | { id: string; role: "bot"; type: "desc-order-options"; itemsJson: string; contextModel?: string | null };
 
 export type FlowStep = { delay?: number; message: ChatMessage };
 
