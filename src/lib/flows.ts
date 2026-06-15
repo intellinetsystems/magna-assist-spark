@@ -76,6 +76,11 @@ export const suggestions = [
 export const quickActions = [
   { label: "Order Part", icon: "Package" },
   { label: "Find Alternate Part", icon: "Replace" },
+  { label: "Active Offers", icon: "Tag" },
+  { label: "Bulk Order Upload", icon: "Upload" },
+  { label: "Voice Multi-Order", icon: "Mic" },
+  { label: "Cart Savings", icon: "ShoppingCart" },
+  { label: "Expiring Campaigns", icon: "Clock" },
   { label: "Create Ticket", icon: "Ticket" },
   { label: "Check Availability", icon: "CheckCircle" },
 ];
