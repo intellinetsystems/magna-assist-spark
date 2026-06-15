@@ -89,6 +89,8 @@ export function Assistant() {
   const timersRef = useRef<number[]>([]);
   // Pending state for the multi-step part flow
   const partFlowRef = useRef<{ attachment?: string; model?: string; variant?: string; figure?: string; query?: string }>({});
+  // Sticky vehicle context for description-only ordering ("Use vehicle Scorpio-N")
+  const selectedVehicleRef = useRef<string | null>(null);
 
   // Load persisted session + history + settings
   useEffect(() => {
