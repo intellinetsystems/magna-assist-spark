@@ -324,6 +324,66 @@ export function Assistant() {
       }
     }
 
+    // ===== OEM Offers / Bulk / Voice intents =====
+    if (/(active\s*offers|current\s*campaigns|discounts?\s*available|recommend\s*(active\s*)?promotions|which\s*offers)/i.test(text)) {
+      const list = allCampaigns.filter((c) => c.status === "active");
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the **${list.length} active OEM campaigns** I found for you:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", title: "Active OEM Campaigns", campaignIds: list.map((c) => c.id) }), 300);
+      }, 800);
+      return;
+    }
+    if (/(expiring\s*(soon\s*)?(campaigns|offers)|expir(es|ing)\s*in)/i.test(text)) {
+      const list = allCampaigns.filter((c) => c.status === "expiring");
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `**${list.length}** campaigns are expiring soon — act fast:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", title: "Expiring Campaigns", campaignIds: list.map((c) => c.id) }), 300);
+      }, 800);
+      return;
+    }
+    if (/(check\s*offers?\s*(on\s*)?(my\s*)?cart|cart\s*savings|how\s*much\s*can\s*i\s*save)/i.test(text)) {
+      const matched = matchCampaignsForParts(demoCart.map((l) => l.partNo));
+      const savings = totalSavings(matched);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `I analyzed your cart and found **${matched.length}** matching campaigns.` });
+        setTimeout(() => pushMessage({
+          id: newId(), role: "bot", type: "cart-analysis",
+          campaignIds: matched.map((c) => c.id), savings,
+          missedHint: "Add 3 more eligible parts to unlock an additional 5% discount.",
+        }), 300);
+      }, 800);
+      return;
+    }
+    if (/(review\s*my\s*cart|show\s*my\s*cart|view\s*cart)/i.test(text)) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "cart-review" }), 800);
+      return;
+    }
+    if (/(bulk\s*(order\s*)?upload|upload\s*(an?\s*)?(excel|file|order)|order\s*template)/i.test(text)) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Sure — download the OEM template, fill it in, and upload it here. I'll validate parts, quantities, and check campaign eligibility." }), 200);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "bulk-upload" }), 600);
+      return;
+    }
+    // Multi-part voice/text ordering: starts with add/order/i need + numbers
+    if (/^(add|order|i\s+need|i\s+want|please\s+add|book)\s+.+/i.test(text) && /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred)\b/i.test(text)) {
+      const parsed = parseVoiceOrder(text);
+      if (parsed.length > 0) {
+        const { items, duplicates } = consolidate(parsed);
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          if (duplicates.length) {
+            const dup = items.find((i) => (i.partNo ?? i.description) === duplicates[0])!;
+            pushMessage({ id: newId(), role: "bot", type: "duplicate-consolidation", partNo: dup.partNo ?? dup.description, totalQty: dup.qty });
+          }
+          pushMessage({ id: newId(), role: "bot", type: "voice-order-confirm", itemsJson: JSON.stringify(items) });
+        }, 800);
+        return;
+      }
+    }
+
     void lower;
     const trigger = flowTriggers.find((t) => t.match.test(text));
     const flow = trigger?.flow ?? "create-ticket";
