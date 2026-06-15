@@ -45,7 +45,21 @@ export type ChatMessage =
   | { id: string; role: "bot"; type: "find-model"; series: string }
   | { id: string; role: "bot"; type: "find-aggregate"; series: string; model: string }
   | { id: string; role: "bot"; type: "find-assembly"; series: string; model: string; aggregate: string }
-  | { id: string; role: "bot"; type: "no-results"; query: string };
+  | { id: string; role: "bot"; type: "no-results"; query: string }
+  // OEM Offers / Bulk Upload / Voice Multi-Part Ordering
+  | { id: string; role: "bot"; type: "campaign-list"; title?: string; campaignIds: string[] }
+  | { id: string; role: "bot"; type: "cart-analysis"; campaignIds: string[]; savings: number; missedHint?: string }
+  | { id: string; role: "bot"; type: "recommendation-banner"; campaignIds: string[]; savings: number }
+  | { id: string; role: "bot"; type: "alert-card"; kind: "expiring" | "volume" | "supersession" | "stock"; title: string; body: string; actionLabel?: string }
+  | { id: string; role: "bot"; type: "cart-review" }
+  | { id: string; role: "bot"; type: "bulk-upload" }
+  | { id: string; role: "bot"; type: "upload-summary"; resultJson: string }
+  | { id: string; role: "bot"; type: "bulk-insights"; eligibleCount: number; supersededCount: number; volumeGap: number; savings: number }
+  | { id: string; role: "bot"; type: "voice-order-confirm"; itemsJson: string }
+  | { id: string; role: "bot"; type: "voice-order-success"; totalParts: number; totalQty: number }
+  | { id: string; role: "bot"; type: "superseded-prompt"; oldPart: string; newPart: string; qty: number }
+  | { id: string; role: "bot"; type: "duplicate-consolidation"; partNo: string; totalQty: number }
+  | { id: string; role: "bot"; type: "invalid-part"; partNo: string };
 
 export type FlowStep = { delay?: number; message: ChatMessage };
 
@@ -62,6 +76,11 @@ export const suggestions = [
 export const quickActions = [
   { label: "Order Part", icon: "Package" },
   { label: "Find Alternate Part", icon: "Replace" },
+  { label: "Active Offers", icon: "Tag" },
+  { label: "Bulk Order Upload", icon: "Upload" },
+  { label: "Voice Multi-Order", icon: "Mic" },
+  { label: "Cart Savings", icon: "ShoppingCart" },
+  { label: "Expiring Campaigns", icon: "Clock" },
   { label: "Create Ticket", icon: "Ticket" },
   { label: "Check Availability", icon: "CheckCircle" },
 ];

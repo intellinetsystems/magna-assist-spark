@@ -5,6 +5,7 @@ import {
   Zap, Maximize2, Minimize2, X, RefreshCw, Mic, MicOff, PhoneOff, Phone, MessageSquare, Send,
   Sparkles, ChevronDown, Search, PenSquare, MessageCircle, HelpCircle, Settings, Trash2, LogOut,
   Package, Replace, Ticket, CheckCircle, ChevronRight, ChevronUp, MessageSquarePlus,
+  Tag, Upload, ShoppingCart, Clock,
 } from "lucide-react";
 import { Waveform } from "./Waveform";
 import {
@@ -21,6 +22,15 @@ import {
   QuickRefPickerCard, QuickRefSeriesCard, QuickRefSubmodelCard, QuickRefListCard, NoResultsCard,
   FindSeriesCard, FindModelCard, FindAggregateCard, FindAssemblyCard,
 } from "./GuidedCards";
+import {
+  CampaignListCard, CartOfferAnalysisCard, RecommendationBanner, AlertCard, CartReviewCard,
+  BulkUploadCard, UploadSummaryCard, BulkInsightsCard,
+  VoiceOrderConfirmCard, VoiceOrderSuccessCard, SupersededPartPrompt, DuplicateConsolidationCard, InvalidPartCard,
+} from "./OffersUploadVoice";
+import {
+  campaigns as allCampaigns, parseVoiceOrder, consolidate, validateBulkRows,
+  matchCampaignsForParts, totalSavings, formatINR, demoCart, type ParsedOrderItem, type BulkValidationResult,
+} from "@/lib/offers-data";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
 import { TypographyToggle } from "./TypographyToggle";
@@ -28,7 +38,7 @@ import { TypographyToggle } from "./TypographyToggle";
 type Mode = "closed" | "panel" | "full";
 
 const qaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  Package, Replace, Ticket, CheckCircle,
+  Package, Replace, Ticket, CheckCircle, Tag, Upload, Mic, ShoppingCart, Clock,
 };
 
 type ChatHistoryItem = { id: string; title: string; messages: ChatMessage[]; updated: number };
@@ -314,6 +324,66 @@ export function Assistant() {
       }
     }
 
+    // ===== OEM Offers / Bulk / Voice intents =====
+    if (/(active\s*offers|current\s*campaigns|discounts?\s*available|recommend\s*(active\s*)?promotions|which\s*offers)/i.test(text)) {
+      const list = allCampaigns.filter((c) => c.status === "active");
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `Here are the **${list.length} active OEM campaigns** I found for you:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", title: "Active OEM Campaigns", campaignIds: list.map((c) => c.id) }), 300);
+      }, 800);
+      return;
+    }
+    if (/(expiring\s*(soon\s*)?(campaigns|offers)|expir(es|ing)\s*in)/i.test(text)) {
+      const list = allCampaigns.filter((c) => c.status === "expiring");
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `**${list.length}** campaigns are expiring soon — act fast:` });
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", title: "Expiring Campaigns", campaignIds: list.map((c) => c.id) }), 300);
+      }, 800);
+      return;
+    }
+    if (/(check\s*offers?\s*(on\s*)?(my\s*)?cart|cart\s*savings|how\s*much\s*can\s*i\s*save)/i.test(text)) {
+      const matched = matchCampaignsForParts(demoCart.map((l) => l.partNo));
+      const savings = totalSavings(matched);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => {
+        pushMessage({ id: newId(), role: "bot", type: "text", text: `I analyzed your cart and found **${matched.length}** matching campaigns.` });
+        setTimeout(() => pushMessage({
+          id: newId(), role: "bot", type: "cart-analysis",
+          campaignIds: matched.map((c) => c.id), savings,
+          missedHint: "Add 3 more eligible parts to unlock an additional 5% discount.",
+        }), 300);
+      }, 800);
+      return;
+    }
+    if (/(review\s*my\s*cart|show\s*my\s*cart|view\s*cart)/i.test(text)) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "cart-review" }), 800);
+      return;
+    }
+    if (/(bulk\s*(order\s*)?upload|upload\s*(an?\s*)?(excel|file|order)|order\s*template)/i.test(text)) {
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Sure — download the OEM template, fill it in, and upload it here. I'll validate parts, quantities, and check campaign eligibility." }), 200);
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "bulk-upload" }), 600);
+      return;
+    }
+    // Multi-part voice/text ordering: starts with add/order/i need + numbers
+    if (/^(add|order|i\s+need|i\s+want|please\s+add|book)\s+.+/i.test(text) && /\d|\b(one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|fifty|hundred)\b/i.test(text)) {
+      const parsed = parseVoiceOrder(text);
+      if (parsed.length > 0) {
+        const { items, duplicates } = consolidate(parsed);
+        setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+        setTimeout(() => {
+          if (duplicates.length) {
+            const dup = items.find((i) => (i.partNo ?? i.description) === duplicates[0])!;
+            pushMessage({ id: newId(), role: "bot", type: "duplicate-consolidation", partNo: dup.partNo ?? dup.description, totalQty: dup.qty });
+          }
+          pushMessage({ id: newId(), role: "bot", type: "voice-order-confirm", itemsJson: JSON.stringify(items) });
+        }, 800);
+        return;
+      }
+    }
+
     void lower;
     const trigger = flowTriggers.find((t) => t.match.test(text));
     const flow = trigger?.flow ?? "create-ticket";
@@ -321,6 +391,18 @@ export function Assistant() {
   }
 
   function handleSuggestion(s: string) {
+    // OEM Offers / Bulk / Voice shortcuts — route through text intents
+    const textMap: Record<string, string> = {
+      "Active Offers": "Show active offers",
+      "Bulk Order Upload": "I want to bulk upload an order",
+      "Voice Multi-Order": "Add 10 Oil Filters, part number ABC-123 and 5 Air Filters, part number XYZ-123",
+      "Cart Savings": "Check offers on my cart",
+      "Expiring Campaigns": "Show expiring campaigns",
+      "Model-Based Offers": "Show offers for Model XEV 9E",
+      "Part-Based Offers": "Show offers on part number ABC-123",
+    };
+    if (textMap[s]) { handleUserInput(textMap[s]); return; }
+
     const map: Record<string, FlowKey> = {
       "Find a part": "part-search",
       "Order Part": "part-search",
@@ -337,6 +419,57 @@ export function Assistant() {
     pushMessage({ id: newId(), role: "user", type: "text", text: trigger?.userText ?? s });
     setTimeout(() => runFlow(flow), 250);
   }
+
+  // ===== Offers/Bulk/Voice callbacks =====
+  const onBulkParsed = useCallback((rows: { partNo: string; qty: number; remarks?: string }[]) => {
+    const result = validateBulkRows(rows);
+    pushMessage({ id: newId(), role: "user", type: "text", text: `Uploaded ${rows.length} rows` });
+    setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "typing" }), 150);
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `I've validated your file. Here's the summary:` });
+      setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "upload-summary", resultJson: JSON.stringify(result) }), 300);
+    }, 900);
+  }, []);
+
+  const onUploadContinue = useCallback((result: BulkValidationResult) => {
+    const validParts = result.rows.filter((r) => r.status === "valid").map((r) => r.partNo);
+    const matched = matchCampaignsForParts(validParts);
+    const savings = totalSavings(matched);
+    pushMessage({ id: newId(), role: "user", type: "text", text: `Add ${result.valid} parts to cart` });
+    setTimeout(() => {
+      pushMessage({ id: newId(), role: "bot", type: "text", text: `**${result.valid} parts** added to your cart successfully.` });
+      setTimeout(() => pushMessage({
+        id: newId(), role: "bot", type: "bulk-insights",
+        eligibleCount: matched.reduce((a, c) => a + c.eligiblePartsCount, 0) || matched.length * 4,
+        supersededCount: result.superseded, volumeGap: 8, savings,
+      }), 400);
+      setTimeout(() => pushMessage({
+        id: newId(), role: "bot", type: "recommendation-banner",
+        campaignIds: matched.map((c) => c.id), savings,
+      }), 1000);
+    }, 250);
+  }, []);
+
+  const onVoiceConfirm = useCallback((items: ParsedOrderItem[]) => {
+    const totalParts = items.length;
+    const totalQty = items.reduce((a, i) => a + i.qty, 0);
+    const matched = matchCampaignsForParts(items.map((i) => i.partNo ?? "").filter(Boolean));
+    const savings = totalSavings(matched);
+    pushMessage({ id: newId(), role: "user", type: "text", text: "Confirm" });
+    setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "voice-order-success", totalParts, totalQty }), 400);
+    if (matched.length) {
+      setTimeout(() => pushMessage({
+        id: newId(), role: "bot", type: "alert-card",
+        kind: "stock", title: "Good News!",
+        body: `${matched.length} parts qualify for active OEM campaigns. Potential Savings: ${formatINR(savings)}`,
+      }), 900);
+      setTimeout(() => pushMessage({
+        id: newId(), role: "bot", type: "recommendation-banner",
+        campaignIds: matched.map((c) => c.id), savings,
+      }), 1500);
+    }
+  }, []);
+
 
   // Continuation handlers for guided cards
   const onAttachmentPick = useCallback((attachment: string) => {
@@ -649,6 +782,47 @@ export function Assistant() {
     if (m.type === "find-aggregate") return <FindAggregateCard key={m.id} series={m.series} model={m.model} onPick={onFindAggregate} />;
     if (m.type === "find-assembly") return <FindAssemblyCard key={m.id} series={m.series} model={m.model} aggregate={m.aggregate} onPick={onFindAssembly} />;
     if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
+    if (m.type === "campaign-list") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <CampaignListCard key={m.id} campaigns={list} title={m.title}
+        onApply={(c) => { pushMessage({ id: newId(), role: "user", type: "text", text: `Apply ${c.name}` }); setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `**${c.name}** applied. Estimated savings: ${formatINR(c.estSavings)}.` }), 400); }}
+        onViewParts={(c) => pushMessage({ id: newId(), role: "bot", type: "text", text: `Eligible parts under **${c.name}**: ${c.eligibleParts.join(", ")}` })}
+      />;
+    }
+    if (m.type === "cart-analysis") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <CartOfferAnalysisCard key={m.id} matched={list} savings={m.savings} missedHint={m.missedHint} />;
+    }
+    if (m.type === "recommendation-banner") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <RecommendationBanner key={m.id} campaigns={list} savings={m.savings}
+        onApply={() => toast.success(`Offer applied · ${formatINR(m.savings)} savings`)}
+        onView={() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", campaignIds: m.campaignIds })} />;
+    }
+    if (m.type === "alert-card") return <AlertCard key={m.id} kind={m.kind} title={m.title} body={m.body} />;
+    if (m.type === "cart-review") return <CartReviewCard key={m.id} onCheckOffers={() => handleUserInput("Check offers on my cart")} />;
+    if (m.type === "bulk-upload") return <BulkUploadCard key={m.id} onParsed={onBulkParsed} />;
+    if (m.type === "upload-summary") {
+      const result = JSON.parse(m.resultJson) as BulkValidationResult;
+      return <UploadSummaryCard key={m.id} result={result} onContinue={() => onUploadContinue(result)} />;
+    }
+    if (m.type === "bulk-insights") return <BulkInsightsCard key={m.id} eligibleCount={m.eligibleCount} supersededCount={m.supersededCount} volumeGap={m.volumeGap} savings={m.savings} onApply={() => toast.success("Offers applied to cart")} />;
+    if (m.type === "voice-order-confirm") {
+      const items = JSON.parse(m.itemsJson) as ParsedOrderItem[];
+      return <VoiceOrderConfirmCard key={m.id} items={items}
+        onConfirm={onVoiceConfirm}
+        onCancel={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Cancelled — no items were added." })}
+        onRemove={(idx) => { const next = items.filter((_, i) => i !== idx); pushMessage({ id: newId(), role: "bot", type: "voice-order-confirm", itemsJson: JSON.stringify(next) }); }}
+      />;
+    }
+    if (m.type === "voice-order-success") return <VoiceOrderSuccessCard key={m.id} totalParts={m.totalParts} totalQty={m.totalQty}
+      onViewCart={() => handleUserInput("Review my cart")}
+      onContinue={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "What else would you like to order?" })}
+      onCheckout={() => toast.success("Proceeding to checkout…")} />;
+    if (m.type === "superseded-prompt") return <SupersededPartPrompt key={m.id} oldPart={m.oldPart} newPart={m.newPart} qty={m.qty}
+      onAccept={() => toast.success(`Switched to ${m.newPart}`)} onKeep={() => toast(`Kept ${m.oldPart}`)} />;
+    if (m.type === "duplicate-consolidation") return <DuplicateConsolidationCard key={m.id} partNo={m.partNo} totalQty={m.totalQty} onProceed={() => toast.success("Consolidated quantity confirmed")} />;
+    if (m.type === "invalid-part") return <InvalidPartCard key={m.id} partNo={m.partNo} onRetry={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Please re-enter the part number." })} />;
     return null;
   };
 
