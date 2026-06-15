@@ -26,10 +26,12 @@ import {
   CampaignListCard, CartOfferAnalysisCard, RecommendationBanner, AlertCard, CartReviewCard,
   BulkUploadCard, UploadSummaryCard, BulkInsightsCard,
   VoiceOrderConfirmCard, VoiceOrderSuccessCard, SupersededPartPrompt, DuplicateConsolidationCard, InvalidPartCard,
+  DescriptionOrderCard,
 } from "./OffersUploadVoice";
 import {
   campaigns as allCampaigns, parseVoiceOrder, consolidate, validateBulkRows,
   matchCampaignsForParts, totalSavings, formatINR, demoCart, type ParsedOrderItem, type BulkValidationResult,
+  parseDescriptionOrder, extractVehicleContext, normalizeModel, type DescOrderItem,
 } from "@/lib/offers-data";
 import { toast } from "sonner";
 import { useSmartAutoScroll } from "@/hooks/use-smart-auto-scroll";
