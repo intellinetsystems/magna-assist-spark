@@ -782,6 +782,47 @@ export function Assistant() {
     if (m.type === "find-aggregate") return <FindAggregateCard key={m.id} series={m.series} model={m.model} onPick={onFindAggregate} />;
     if (m.type === "find-assembly") return <FindAssemblyCard key={m.id} series={m.series} model={m.model} aggregate={m.aggregate} onPick={onFindAssembly} />;
     if (m.type === "no-results") return <NoResultsCard key={m.id} query={m.query} onCreateTicket={onNoResultsTicket} />;
+    if (m.type === "campaign-list") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <CampaignListCard key={m.id} campaigns={list} title={m.title}
+        onApply={(c) => { pushMessage({ id: newId(), role: "user", type: "text", text: `Apply ${c.name}` }); setTimeout(() => pushMessage({ id: newId(), role: "bot", type: "text", text: `**${c.name}** applied. Estimated savings: ${formatINR(c.estSavings)}.` }), 400); }}
+        onViewParts={(c) => pushMessage({ id: newId(), role: "bot", type: "text", text: `Eligible parts under **${c.name}**: ${c.eligibleParts.join(", ")}` })}
+      />;
+    }
+    if (m.type === "cart-analysis") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <CartOfferAnalysisCard key={m.id} matched={list} savings={m.savings} missedHint={m.missedHint} />;
+    }
+    if (m.type === "recommendation-banner") {
+      const list = allCampaigns.filter((c) => m.campaignIds.includes(c.id));
+      return <RecommendationBanner key={m.id} campaigns={list} savings={m.savings}
+        onApply={() => toast.success(`Offer applied · ${formatINR(m.savings)} savings`)}
+        onView={() => pushMessage({ id: newId(), role: "bot", type: "campaign-list", campaignIds: m.campaignIds })} />;
+    }
+    if (m.type === "alert-card") return <AlertCard key={m.id} kind={m.kind} title={m.title} body={m.body} />;
+    if (m.type === "cart-review") return <CartReviewCard key={m.id} onCheckOffers={() => handleUserInput("Check offers on my cart")} />;
+    if (m.type === "bulk-upload") return <BulkUploadCard key={m.id} onParsed={onBulkParsed} />;
+    if (m.type === "upload-summary") {
+      const result = JSON.parse(m.resultJson) as BulkValidationResult;
+      return <UploadSummaryCard key={m.id} result={result} onContinue={() => onUploadContinue(result)} />;
+    }
+    if (m.type === "bulk-insights") return <BulkInsightsCard key={m.id} eligibleCount={m.eligibleCount} supersededCount={m.supersededCount} volumeGap={m.volumeGap} savings={m.savings} onApply={() => toast.success("Offers applied to cart")} />;
+    if (m.type === "voice-order-confirm") {
+      const items = JSON.parse(m.itemsJson) as ParsedOrderItem[];
+      return <VoiceOrderConfirmCard key={m.id} items={items}
+        onConfirm={onVoiceConfirm}
+        onCancel={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Cancelled — no items were added." })}
+        onRemove={(idx) => { const next = items.filter((_, i) => i !== idx); pushMessage({ id: newId(), role: "bot", type: "voice-order-confirm", itemsJson: JSON.stringify(next) }); }}
+      />;
+    }
+    if (m.type === "voice-order-success") return <VoiceOrderSuccessCard key={m.id} totalParts={m.totalParts} totalQty={m.totalQty}
+      onViewCart={() => handleUserInput("Review my cart")}
+      onContinue={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "What else would you like to order?" })}
+      onCheckout={() => toast.success("Proceeding to checkout…")} />;
+    if (m.type === "superseded-prompt") return <SupersededPartPrompt key={m.id} oldPart={m.oldPart} newPart={m.newPart} qty={m.qty}
+      onAccept={() => toast.success(`Switched to ${m.newPart}`)} onKeep={() => toast(`Kept ${m.oldPart}`)} />;
+    if (m.type === "duplicate-consolidation") return <DuplicateConsolidationCard key={m.id} partNo={m.partNo} totalQty={m.totalQty} onProceed={() => toast.success("Consolidated quantity confirmed")} />;
+    if (m.type === "invalid-part") return <InvalidPartCard key={m.id} partNo={m.partNo} onRetry={() => pushMessage({ id: newId(), role: "bot", type: "text", text: "Please re-enter the part number." })} />;
     return null;
   };
 
