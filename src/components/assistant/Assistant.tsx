@@ -38,7 +38,7 @@ import { TypographyToggle } from "./TypographyToggle";
 type Mode = "closed" | "panel" | "full";
 
 const qaIcons: Record<string, React.ComponentType<{ className?: string }>> = {
-  Package, Replace, Ticket, CheckCircle,
+  Package, Replace, Ticket, CheckCircle, Tag, Upload, Mic, ShoppingCart, Clock,
 };
 
 type ChatHistoryItem = { id: string; title: string; messages: ChatMessage[]; updated: number };
